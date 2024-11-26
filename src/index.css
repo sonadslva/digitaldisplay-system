@@ -1,0 +1,166 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html{
+    scroll-behavior: smooth;
+}
+
+body{
+    /* background: rgba(132, 255, 0, 0.89);
+     */
+     background: linear-gradient(0deg, rgb(174, 255, 0) 0%, rgb(5, 134, 0) 100%);
+     background-repeat: no-repeat;
+     background-size: cover;
+     /* height: 100dvh; */
+     /* overflow: hidden; */
+     backdrop-filter: blur(20px);
+}
+.BoxShadow{
+    background-color: #EFEFEF;
+    box-shadow: inset rgb(0 0 0 / 16%) 0px 3px 6px;
+    backdrop-filter: blur(20px);   
+}
+.HideScrollBar::-webkit-scrollbar{
+    display: none;
+}
+table{
+    text-align: center;
+    border-collapse: collapse;
+    border-spacing: 0;
+    /* border-radius: 12px 12px 0 0; */
+    overflow: hidden;
+    /* margin: auto; */
+    width: 100%;
+  }
+  th{
+    background-color: rgb(0, 0, 0);
+    color: white;
+  }
+  th,td{
+    padding: 10px 20px;
+  }
+  tbody tr td{
+    /* background-color: #ffffff; */
+    border: .1px solid #949494;
+    /* backdrop-filter: blur(10px); */
+  }
+  td {
+    text-align: center;
+    vertical-align: middle;
+  }
+  
+  .toggle {
+    position: relative;
+    width: 40px;
+    height: 20px;
+    background: #ccc;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  .toggle.active {
+    background: #4caf50;
+  }
+  
+  .toggle-indicator {
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    background: white;
+    border-radius: 50%;
+    top: 1px;
+    left: 1px;
+    transition: transform 0.3s;
+  }
+  
+  .toggle.active .toggle-indicator {
+    transform: translateX(20px);
+  }
+  table{
+    background-color: #e7e5e5;
+  }
+  .BgBackground{
+    background: radial-gradient(circle, rgba(30,149,70,1) 0%, rgba(71,130,71,) 38%, rgba(22,181,150,1) 100%);;
+  }
+  /* #d35246 price color*/ 
+  /* Container for the scroller */
+.product-scroller {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+  /* background-color: #f8f9fa; */
+}
+
+/* Slider animation */
+.product-slider {
+  display: flex;
+  gap: 20px;
+  animation: scroll 20s linear infinite;
+}
+
+/* Product card styling */
+.product-card {
+  width: 200px;
+  height: 200px;
+  background: #ffffff;
+  border-radius: 10px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.product-name {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.product-image img {
+  height: 110px;
+  width: auto;
+  object-fit: contain;
+}
+
+/* Keyframes for continuous scrolling */
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+.SingleScrollBackground{
+  background: linear-gradient(130deg, #e6f87e 0%, #e6f87e 38%, #b0e3d9 100%);
+}
+.TableListBg{
+  background: linear-gradient(0deg, #a4d38f 0%, #a4d38f 60%, #c5ffaadf 40%);
+  background-repeat: no-repeat;
+}
+.TableListBg::-webkit-scrollbar{
+  display: none;
+}
+/* .productScroll{
+  background: linear-gradient(110deg, #6bb542 20%, #6cb643 30%, #defd02 40%);
+} */
+/* background: linear-gradient(130deg, rgba(72,72,72,1) 0%, rgba(71,130,71,1) 38%, rgba(22,181,150,1) 100%); */
+/* background: radial-gradient(circle, rgba(30,149,70,1) 0%, rgba(71,130,71,1) 38%, rgba(22,181,150,1) 100%); */
+
+.BgBackground{
+  backdrop-filter: blur(10px);
+  background-color: #00ff082a;
+  border: .2px solid white;
+  box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+}
