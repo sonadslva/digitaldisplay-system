@@ -7,10 +7,12 @@ import { ref, onValue, update, remove } from 'firebase/database';
 import { rtDatabase } from './Firebase';
 import { auth } from './Firebase';
 import { Navigate } from "react-router-dom"
+import UploadBackgroundVideo from "./UploadBackgroundVideo";
+import { SiGoogledisplayandvideo360 } from "react-icons/si";
 
 const AdminPannel = () => {
   const [items, setItems] = useState([]);
-  const [videos, setVideos] = useState([]);
+  // const [videos, setVideos] = useState([]);
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -32,7 +34,7 @@ const AdminPannel = () => {
       setItems(itemsList);
     });
 
-    fetchVideos();
+    // fetchVideos();
 
     return () => unsubscribe();
   }, []);
@@ -51,19 +53,19 @@ const AdminPannel = () => {
   };
 
   // Fetch videos from Firestore
-  const fetchVideos = async () => {
-    try {
-      const videosQuery = query(collection(db, 'videos'), orderBy('uploadedAt', 'desc'));
-      const querySnapshot = await getDocs(videosQuery);
-      const videosList = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-      setVideos(videosList);
-    } catch (error) {
-      console.error('Error fetching videos:', error);
-    }
-  };
+  // const fetchVideos = async () => {
+  //   try {
+  //     const videosQuery = query(collection(db, 'videos'), orderBy('uploadedAt', 'desc'));
+  //     const querySnapshot = await getDocs(videosQuery);
+  //     const videosList = querySnapshot.docs.map(doc => ({
+  //       id: doc.id,
+  //       ...doc.data()
+  //     }));
+  //     setVideos(videosList);
+  //   } catch (error) {
+  //     console.error('Error fetching videos:', error);
+  //   }
+  // };
 
   const handleToggleStatus = async (id) => {
     try {
@@ -144,56 +146,56 @@ const AdminPannel = () => {
     }
   };
 
-  const handleVideoUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+  // const handleVideoUpload = async (event) => {
+  //   const file = event.target.files[0];
+  //   if (!file) return;
 
-    setIsUploading(true);
-    try {
-      // Convert video to base64
-      const base64Video = await convertFileToBase64(file);
+  //   setIsUploading(true);
+  //   try {
+  //     // Convert video to base64
+  //     const base64Video = await convertFileToBase64(file);
       
-      // Save to Firestore
-      await addDoc(collection(db, 'videos'), {
-        name: file.name,
-        videoData: base64Video,
-        uploadedAt: new Date().toISOString(),
-        duration: await getVideoDuration(file)
-      });
+  //     // Save to Firestore
+  //     await addDoc(collection(db, 'videos'), {
+  //       name: file.name,
+  //       videoData: base64Video,
+  //       uploadedAt: new Date().toISOString(),
+  //       duration: await getVideoDuration(file)
+  //     });
 
-      // Refresh videos list
-      fetchVideos();
-      alert('Video uploaded successfully!');
-    } catch (error) {
-      console.error('Error uploading video:', error);
-      alert('Error uploading video. Please try again.');
-    } finally {
-      setIsUploading(false);
-    }
-  };
+  //     // Refresh videos list
+  //     fetchVideos();
+  //     alert('Video uploaded successfully!');
+  //   } catch (error) {
+  //     console.error('Error uploading video:', error);
+  //     alert('Error uploading video. Please try again.');
+  //   } finally {
+  //     setIsUploading(false);
+  //   }
+  // };
 
   // Helper function to convert file to base64
-  const convertFileToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-    });
-  };
+  // const convertFileToBase64 = (file) => {
+  //   return new Promise((resolve, reject) => {
+  //     const reader = new FileReader();
+  //     reader.readAsDataURL(file);
+  //     reader.onload = () => resolve(reader.result);
+  //     reader.onerror = (error) => reject(error);
+  //   });
+  // };
 
    // Helper function to get video duration
-   const getVideoDuration = (file) => {
-    return new Promise((resolve) => {
-      const video = document.createElement('video');
-      video.preload = 'metadata';
-      video.onloadedmetadata = () => {
-        window.URL.revokeObjectURL(video.src);
-        resolve(video.duration);
-      };
-      video.src = URL.createObjectURL(file);
-    });
-  };
+  //  const getVideoDuration = (file) => {
+  //   return new Promise((resolve) => {
+  //     const video = document.createElement('video');
+  //     video.preload = 'metadata';
+  //     video.onloadedmetadata = () => {
+  //       window.URL.revokeObjectURL(video.src);
+  //       resolve(video.duration);
+  //     };
+  //     video.src = URL.createObjectURL(file);
+  //   });
+  // };
 
   // Logout Function
   const handleLogout = async () => {
@@ -207,11 +209,11 @@ const AdminPannel = () => {
 
 
   return (
-    <div className=" BgBackground h-screen overflow-auto">
+    <div className=" BgBackground h-screen overflow-auto relative z-[999]">
       <section>
         <div className="flex w-full justify-center items-center flex-col mb-10">
           {/* Navbar */}
-          <div className="w-full px-2 py-3 mb-5 bg-[#fff]">
+          <div className="w-full px-2 py-3 mb-5 bg-[#ffffff]">
             <div className="flex justify-between font-bold px-6 items-center text-3xl">
               <div>Logo</div>
               <button className="text-lg font-semibold" onClick={handleLogout}>Logout</button>
@@ -222,23 +224,16 @@ const AdminPannel = () => {
           <div className="mb-5 w-full">
             <div className="grid grid-cols-1 place-items-center lg:flex items-center justify-center md:justify-between w-full px-6">
               <div className=" flex justify-center items-center gap-3 mb-5 lg:mb-0">
-                <Link to="/addIitem">
+                <Link to="/addItem">
                   <div className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold">
                     Add Item <span><BsFillPlusSquareFill /></span>
                   </div>
                 </Link>
-                <div className="relative">
-                  <input
-                    type="file"
-                    accept="video/*"
-                    onChange={handleVideoUpload}
-                    disabled={isUploading}
-                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  />
+                <Link to="/BackgroundVideo">
                   <div className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold">
-                    {isUploading ? 'Uploading...' : 'Upload Video'} <span><BsFillPlusSquareFill /></span>
+                    Bg Video <span><SiGoogledisplayandvideo360 /></span>
                   </div>
-                </div>
+                </Link>
               </div>
               <div className="grid grid-cols-1 place-content-center md:flex justify-center items-center gap-3">
                 <div className="relative flex justify-center items-center">

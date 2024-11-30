@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
 
 const Home = () => {
   return (
-    <div className="h-screen w-full lg:overflow-hidden">
+    <div className="h-screen w-full overflow-auto lg:overflow-hidden">
       {/* Logo Section */}
       <section className="w-full py-3 bg-white fixed top-0 left-0 z-10">
         <nav className="px-4 flex justify-between items-center">

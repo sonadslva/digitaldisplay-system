@@ -15,12 +15,13 @@ html{
 body{
     /* background: rgba(132, 255, 0, 0.89);
      */
-     background: linear-gradient(0deg, rgb(174, 255, 0) 0%, rgb(5, 134, 0) 100%);
+     background: linear-gradient(0deg, #aeff00 0%, rgb(5, 134, 0) 100%);
      background-repeat: no-repeat;
      background-size: cover;
      /* height: 100dvh; */
      /* overflow: hidden; */
      backdrop-filter: blur(20px);
+     overflow: hidden;
 }
 .BoxShadow{
     background-color: #EFEFEF;
@@ -163,4 +164,7 @@ table{
   background-color: #00ff082a;
   border: .2px solid white;
   box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
+}
+.bgBackground{
+  background: radial-gradient(circle, #1e9546 0%, #478247 38%, #16b596 100%);;
 }

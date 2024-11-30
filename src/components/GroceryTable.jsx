@@ -3,8 +3,8 @@ import { ref, onValue } from 'firebase/database';
 import { rtDatabase } from './Firebase';
 
 const GroceryTable = () => {
-
     const [items, setItems] = useState([]);
+    const [currentIndex, setCurrentIndex] = useState(0);
 
     useEffect(() => {
         const itemsRef = ref(rtDatabase, 'items');
@@ -12,10 +12,10 @@ const GroceryTable = () => {
             const data = snapshot.val();
             if (data) {
                 const itemsList = Object.values(data)
-                    .filter(item => item.displayPreferences.showInItemList)
-                    .map(item => ({
+                    .filter((item) => item.displayPreferences?.showInItemList)
+                    .map((item) => ({
                         name: item.name,
-                        price: item.price
+                        price: item.price,
                     }));
                 setItems(itemsList);
             }
@@ -24,40 +24,7 @@ const GroceryTable = () => {
         return () => unsubscribe();
     }, []);
 
-    const groceryList = [
-        { name: 'തക്കാളി', price: 20 },
-        { name: 'വലിയ ഉള്ളി', price: 30 },
-        { name: 'ഉരുളക്കിഴങ്ങ്', price: 28 },
-        { name: 'വെണ്ടയ്ക്ക', price: 16 },
-        { name: 'മത്തൻ', price: 36 },
-        { name: 'പടവലം', price: 22 },
-        { name: 'പയർ', price: 18 },
-        { name: 'കിഴങ്ങ്', price: 35 },
-        { name: 'വെണ്ടയ്ക്ക', price: 16 },
-        { name: 'വെണ്ടയ്ക്ക', price: 16 },
-        { name: 'മത്തൻ', price: 36 },
-        { name: 'പടവലം', price: 22 },
-        { name: 'പയർ', price: 18 },
-        { name: 'കിഴങ്ങ്', price: 35 },
-        { name: 'വെണ്ടയ്ക്ക', price: 16 },
-        { name: 'തക്കാളി', price: 20 },
-        { name: 'വലിയ ഉള്ളി', price: 30 },
-        { name: 'ഉരുളക്കിഴങ്ങ്', price: 28 },
-        { name: 'വെണ്ടയ്ക്ക', price: 16 },
-        { name: 'മത്തൻ', price: 36 },
-        { name: 'പടവലം', price: 22 },
-        { name: 'പയർ', price: 18 },
-        { name: 'കിഴങ്ങ്', price: 35 },
-        { name: 'വെണ്ടയ്ക്ക', price: 16 },
-        { name: 'വെണ്ടയ്ക്ക', price: 16 },
-        { name: 'മത്തൻ', price: 36 },
-        { name: 'പടവലം', price: 22 },
-        { name: 'പയർ', price: 18 },
-        { name: 'കിഴങ്ങ്', price: 35 },
-        { name: 'വെണ്ടയ്ക്ക', price: 16 },
-    ];
-
-    // Function to split the grocery list into rows of 3 items
+    // Paginate items into chunks of 18
     const chunkArray = (array, size) => {
         const result = [];
         for (let i = 0; i < array.length; i += size) {
@@ -66,7 +33,30 @@ const GroceryTable = () => {
         return result;
     };
 
-    const rows = chunkArray(items, 2);
+    const paginatedItems = chunkArray(items, 18);
+
+    // Update the visible items every 10 seconds
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setCurrentIndex((prevIndex) => (prevIndex + 1) % paginatedItems.length);
+        }, 10000); // 10 seconds
+
+        return () => clearInterval(interval); // Cleanup
+    }, [paginatedItems]);
+
+    // Ensure at least one page of items to display
+    const visibleItems = paginatedItems[currentIndex] || [];
+
+    // Function to chunk rows into groups of 2 items for display
+    const chunkRows = (array, size) => {
+        const result = [];
+        for (let i = 0; i < array.length; i += size) {
+            result.push(array.slice(i, i + size));
+        }
+        return result;
+    };
+
+    const rows = chunkRows(visibleItems, 2);
 
     return (
         <div className="bg-[#a4d38f]">
@@ -75,22 +65,29 @@ const GroceryTable = () => {
             <div className="w-full overflow-x-auto">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-5">
                     {rows.map((row, rowIndex) => (
-                        <>
+                        <React.Fragment key={rowIndex}>
                             {/* First item in each row */}
-                            <div key={rowIndex} className={`w-full text-center ${rowIndex % 2 === 0 ? 'bg-[#ddffd1]' : 'bg-[#c2c2c2bd]'} px-8 py-2 font-medium`}>
-                                {row[0].name} - <span className='text-[#d35246] font-semibold'>{row[0].price}</span>
+                            <div
+                                className={`w-full text-center ${
+                                    rowIndex % 2 === 0 ? 'bg-[#ddffd1]' : 'bg-[#c2c2c2bd]'
+                                } px-8 py-2 font-medium`}
+                            >
+                                {row[0]?.name} -{' '}
+                                <span className="text-[#d35246] font-semibold">{row[0]?.price}</span>
                             </div>
 
                             {/* Second item in each row */}
-                            <div key={rowIndex + '-second'} className={`w-full text-center ${rowIndex % 2 === 0 ? 'bg-[#ddffd1]' : 'bg-[#c2c2c2bd]'} px-8 py-2`}>
-                                {row[1]?.name} - <span className='text-[#d35246] font-semibold'>{row[1]?.price}</span>
-                            </div>
-
-                            {/* Third item in each row */}
-                            {/* <div key={rowIndex + '-third'} className={`w-full text-center ${rowIndex % 2 === 0 ? 'bg-[#ddffd1]' : 'bg-[#c2c2c2bd]'} px-8 py-2`}>
-                                {row[2]?.name} - <span className='text-[#d35246] font-semibold'>{row[2]?.price}</span>
-                            </div> */}
-                        </>
+                            {row[1] && (
+                                <div
+                                    className={`w-full text-center ${
+                                        rowIndex % 2 === 0 ? 'bg-[#ddffd1]' : 'bg-[#c2c2c2bd]'
+                                    } px-8 py-2 font-medium`}
+                                >
+                                    {row[1]?.name} -{' '}
+                                    <span className="text-[#d35246] font-semibold">{row[1]?.price}</span>
+                                </div>
+                            )}
+                        </React.Fragment>
                     ))}
                 </div>
             </div>
