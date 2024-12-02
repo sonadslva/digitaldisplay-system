@@ -62,7 +62,7 @@ const SingleProductSlider = () => {
                         {products.map((product, index) => (
                             <div
                                 key={index}
-                                className="w-full h-full flex-shrink-0 flex flex-col justify-between"
+                                className="w-full h-full flex-shrink-0 flex flex-col justify-between overflow-hidden"
                             >
                                 <div className="flex flex-col items-center justify-center h-full">
                                     {/* Image Section */}
@@ -75,14 +75,14 @@ const SingleProductSlider = () => {
                                     </div>
 
                                     {/* Product Name Section */}
-                                    <div className="text-center font-extrabold text-[32px] text-[#201e1e] mb-4">
+                                    <div className="text-center font-extrabold text-[32px] text-[#201e1e] mb-4 PriceName">
                                         {product.name}
                                     </div>
 
                                     {/* Price Section at the bottom */}
-                                    <div className="w-full text-center flex justify-center items-center bg-[#68b244] rounded-3xl py-1 text-[#fff] text-[60px]">
+                                    <div className="w-full text-center flex justify-center items-center bg-[#68b244] rounded-3xl text-[#fff] text-[60px] PriceFontIcon">
                                         <FaRupeeSign />
-                                        <span className="ml-1 text-[70px] font-bold">{product.price}.0</span>
+                                        <span className="ml-1 text-[70px] font-bold PriceFont">{product.price}.0</span>
                                     </div>
                                 </div>
                             </div>
