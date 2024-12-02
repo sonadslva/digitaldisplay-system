@@ -80,9 +80,9 @@ const SingleProductSlider = () => {
                                     </div>
 
                                     {/* Price Section at the bottom */}
-                                    <div className="w-full text-center flex justify-center items-center bg-[#68b244] rounded-3xl py-3 text-[#fff] text-2xl">
+                                    <div className="w-full text-center flex justify-center items-center bg-[#68b244] rounded-3xl py-1 text-[#fff] text-[60px]">
                                         <FaRupeeSign />
-                                        <span className="ml-1 text-3xl font-bold">{product.price}.0</span>
+                                        <span className="ml-1 text-[70px] font-bold">{product.price}.0</span>
                                     </div>
                                 </div>
                             </div>
