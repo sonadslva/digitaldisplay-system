@@ -70,10 +70,10 @@ const GroceryTable = () => {
                             <div
                                 className={`w-full text-center ${
                                     rowIndex % 2 === 0 ? 'bg-[#ddffd1]' : 'bg-[#c2c2c2bd]'
-                                } px-8 py-2 font-medium`}
+                                } px-8 py-2 font-medium text-[38px]`}
                             >
                                 {row[0]?.name} -{' '}
-                                <span className="text-[#d35246] font-semibold">{row[0]?.price}</span>
+                                <span className="text-[#000000] font-bold">{row[0]?.price}</span>
                             </div>
 
                             {/* Second item in each row */}
@@ -81,10 +81,10 @@ const GroceryTable = () => {
                                 <div
                                     className={`w-full text-center ${
                                         rowIndex % 2 === 0 ? 'bg-[#ddffd1]' : 'bg-[#c2c2c2bd]'
-                                    } px-8 py-2 font-medium`}
+                                    } px-8 py-2 font-medium text-[38px]`}
                                 >
                                     {row[1]?.name} -{' '}
-                                    <span className="text-[#d35246] font-semibold">{row[1]?.price}</span>
+                                    <span className="text-[#000000] font-bold">{row[1]?.price}</span>
                                 </div>
                             )}
                         </React.Fragment>
