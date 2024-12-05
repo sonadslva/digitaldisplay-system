@@ -3,16 +3,19 @@ import ProductScroll from './ProductScroll';
 import GroceryTable from './GroceryTable';
 import SingleProductSlider from './SingleProductSlider';
 import { Link } from 'react-router-dom';
+import logo from "../assets/logo.png"
 
 const Home = () => {
   return (
     <div className="h-screen w-full overflow-auto lg:overflow-hidden">
       {/* Logo Section */}
-      <section className="w-full py-3 bg-white fixed top-0 left-0 z-10">
+      <section className="w-full py-3 bg-[#000] fixed top-0 left-0 z-10">
         <nav className="px-4 flex justify-between items-center">
-          <div className="font-bold text-2xl">Logo</div>
+          <div className="w-[100px] md:w-[130px] h-auto">
+            <img src={logo} className="w-full h-full object-contain" alt="" />
+          </div>
           <Link to="/login">
-            <div className='font-bold text-2xl'>Login</div>
+            <div className='font-bold text-2xl text-[#fff]'>Login</div>
           </Link>
         </nav>
       </section>
