@@ -9,6 +9,8 @@ import { auth } from './Firebase';
 import { Navigate } from "react-router-dom"
 import UploadBackgroundVideo from "./UploadBackgroundVideo";
 import { SiGoogledisplayandvideo360 } from "react-icons/si";
+import logo from "../assets/logo.png"
+
 
 const AdminPannel = () => {
   const [items, setItems] = useState([]);
@@ -213,9 +215,11 @@ const AdminPannel = () => {
       <section>
         <div className="flex w-full justify-center items-center flex-col mb-10">
           {/* Navbar */}
-          <div className="w-full px-2 py-3 mb-5 bg-[#ffffff]">
+          <div className="w-full px-2 py-3 mb-5 NavbarBg">
             <div className="flex justify-between font-bold px-6 items-center text-3xl">
-              <div>Logo</div>
+              <div className="w-[100px] md:w-[130px] h-auto">
+                <img src={logo} className="w-full h-full object-contain drop-shadow-md" alt="" />
+              </div>
               <button className="text-lg font-semibold" onClick={handleLogout}>Logout</button>
             </div>
           </div>

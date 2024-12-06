@@ -15,7 +15,7 @@ const Home = () => {
             <img src={logo} className="w-full h-full object-contain drop-shadow-md" alt="" />
           </div>
           <Link to="/login">
-            <div className='font-bold text-2xl text-[#fff]'>Login</div>
+            <div className='font-bold text-2xl text-[#000]'>Login</div>
           </Link>
         </nav>
       </section>
