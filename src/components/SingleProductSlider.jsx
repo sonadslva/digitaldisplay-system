@@ -75,14 +75,14 @@ const SingleProductSlider = () => {
                                     </div>
 
                                     {/* Product Name Section */}
-                                    <div className="text-center font-extrabold text-[32px] text-[#201e1e] mb-4 PriceName">
+                                    <div className="text-center font-extrabold text-xl lg:text-[32px] text-[#201e1e] mb-4 PriceName">
                                         {product.name}
                                     </div>
 
                                     {/* Price Section at the bottom */}
-                                    <div className="w-full text-center flex justify-center items-center bg-[#68b244] rounded-3xl text-[#fff] text-[60px] PriceFontIcon">
+                                    <div className="w-full text-center flex justify-center items-center bg-[#68b244] rounded-3xl text-[#fff] lg:text-[60px] text-3xl PriceFontIcon lg:py-4">
                                         <FaRupeeSign />
-                                        <span className="ml-1 text-[70px] font-bold PriceFont">{product.price}.0</span>
+                                        <span className="ml-1 lg:text-[70px] font-bold PriceFont">{product.price}.0</span>
                                     </div>
                                 </div>
                             </div>

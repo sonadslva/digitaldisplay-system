@@ -70,7 +70,7 @@ const GroceryTable = () => {
                             <div
                                 className={`w-full text-center ${
                                     rowIndex % 2 === 0 ? 'bg-[#ddffd1]' : 'bg-[#c2c2c2bd]'
-                                } px-8 py-2 font-medium text-[38px]`}
+                                } px-8 py-2 font-bold lg:font-medium 2xl:text-[38px]`}
                             >
                                 {row[0]?.name} -{' '}
                                 <span className="text-[#000000] font-bold">{row[0]?.price}</span>
@@ -81,7 +81,7 @@ const GroceryTable = () => {
                                 <div
                                     className={`w-full text-center ${
                                         rowIndex % 2 === 0 ? 'bg-[#ddffd1]' : 'bg-[#c2c2c2bd]'
-                                    } px-8 py-2 font-medium text-[38px]`}
+                                    } px-8 py-2 font-bold 2xl:text-[38px] lg:font-medium`}
                                 >
                                     {row[1]?.name} -{' '}
                                     <span className="text-[#000000] font-bold">{row[1]?.price}</span>

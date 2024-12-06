@@ -60,7 +60,7 @@ const ProductScroll = () => {
               />
             </div>
             <div className="product-name">{product.name}</div>
-            <div className="product-price flex w-full justify-center items-center bg-[#1d485f] absolute bottom-0 gap-1 text-[45px] font-semibold text-[#fff]">
+            <div className="product-price flex w-full justify-center items-center bg-[#1d485f] absolute bottom-0 gap-1 text-xl lg:text-[45px] font-semibold text-[#fff]">
               <HiCurrencyRupee />
               {product.price}
             </div>
