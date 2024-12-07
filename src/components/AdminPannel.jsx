@@ -220,7 +220,7 @@ const AdminPannel = () => {
               <div className="w-[100px] md:w-[130px] h-auto">
                 <img src={logo} className="w-full h-full object-contain drop-shadow-md" alt="" />
               </div>
-              <button className="text-lg font-semibold" onClick={handleLogout}>Logout</button>
+              <button className="text-lg lg:text-xl font-semibold" onClick={handleLogout}>Logout</button>
             </div>
           </div>
 

@@ -9,7 +9,7 @@ const Home = () => {
   return (
     <div className="h-screen w-full overflow-auto lg:overflow-hidden">
       {/* Logo Section */}
-      <section className="w-full py-3 bg-[#000] NavbarBg fixed top-0 left-0 z-[999]">
+      <section className="w-full py-3 bg-[#000] NavbarBg fixed top-0 left-0 z-[998]">
         <nav className="px-4 flex justify-between items-center">
           <div className="w-[100px] md:w-[130px] h-auto">
             <img src={logo} className="w-full h-full object-contain drop-shadow-md" alt="" />
