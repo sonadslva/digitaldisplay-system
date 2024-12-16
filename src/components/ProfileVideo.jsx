@@ -2,22 +2,46 @@ import React, { useState, useEffect } from 'react';
 import UploadBackgroundVideo from './UploadBackgroundVideo';
 import { Link } from "react-router-dom";
 import { ref, onValue, remove } from 'firebase/database';
-import { rtDatabase } from './Firebase';
+import { auth, rtDatabase } from './Firebase';
 
 const ProfileVideo = () => {
   const [videos, setVideos] = useState([]);
+  
+  // YouTube ID Extraction Function
+  const extractYouTubeId = (url) => {
+    try {
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+      const match = url.match(regExp);
+      return match && match[2].length === 11 ? match[2] : null;
+    } catch (err) {
+      console.error('Error extracting YouTube ID', err);
+      return null;
+    }
+  };
 
   // Fetch videos from Firebase
   useEffect(() => {
-    const videosRef = ref(rtDatabase, 'videos');
-    const unsubscribe = onValue(videosRef, (snapshot) => {
+    const userId = auth.currentUser?.uid; // Get the logged-in user's ID
+    if (!userId) {
+      console.error("User not logged in.");
+      return;
+    }
+
+    const userVideosRef = ref(rtDatabase, `users/${userId}/videos`); // Reference the logged-in user's videos
+    const unsubscribe = onValue(userVideosRef, (snapshot) => {
       const data = snapshot.val();
       if (data) {
-        const videosList = Object.keys(data).map(key => ({
+        const videosList = Object.keys(data).map((key) => ({
           id: key,
-          ...data[key]
+          ...data[key],
         }));
-        setVideos(videosList);
+
+        // Filter valid videos (valid YouTube URLs)
+        const validVideos = videosList.filter(video => extractYouTubeId(video.url));
+        
+        setVideos(validVideos);
+      } else {
+        setVideos([]); // If no videos exist, set videos to an empty array
       }
     });
 
@@ -26,7 +50,13 @@ const ProfileVideo = () => {
 
   // Delete video from Firebase
   const handleDelete = (id) => {
-    const videoRef = ref(rtDatabase, `videos/${id}`);
+    const userId = auth.currentUser?.uid; // Get the logged-in user's ID
+    if (!userId) {
+      console.error("User not logged in.");
+      return;
+    }
+
+    const videoRef = ref(rtDatabase, `users/${userId}/videos/${id}`); // Reference the specific video under the user's ID
     remove(videoRef)
       .then(() => {
         console.log("Video deleted successfully.");
@@ -54,7 +84,7 @@ const ProfileVideo = () => {
               <div key={video.id} className="w-80 h-48 border rounded-lg overflow-hidden shadow-md relative">
                 <iframe
                   className="w-full h-full"
-                  src={`${video.url}&autoplay=1&mute=1`}
+                  src={`${video.url}?autoplay=1&mute=1`}
                   frameBorder="0"
                   allow="autoplay; encrypted-media; picture-in-picture"
                   allowFullScreen

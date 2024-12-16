@@ -7,7 +7,8 @@ import Login from './components/Login';
 import { auth } from './components/Firebase';
 import BackgroundVideo from './components/BackgroundVideo';
 import ProfileVideo from './components/ProfileVideo';
-
+import Superadmin from './components/Superadmin';
+import Adduser from './components/Adduser';
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showHome, setShowHome] = useState(true);
@@ -28,13 +29,16 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={<Login />} />
+        <Route path='/login' element={<Login />}/>
+        <Route path="/Home" element={<Home />} />
         <Route path="/admin" element={<ProtectedRoute element={<AdminPannel />} />} />
         <Route path="/addItem" element={<ProtectedRoute element={<AddItem />} />} />
         <Route path="/BackgroundVideo" element={<ProtectedRoute element={<ProfileVideo />} />} />
+        <Route path='/Superadmin' element={<Superadmin/>}/>
+        <Route path='/Adduser' element={<Adduser/>}></Route>
       </Routes>
       <div>
-        {showHome && <Home />}
+        {showHome && <Login />}
         <BackgroundVideo onShowHome={setShowHome} />
       </div>
     </Router>

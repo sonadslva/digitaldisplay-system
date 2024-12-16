@@ -1,28 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import { ref, onValue } from 'firebase/database';
 import { rtDatabase } from './Firebase';
+import { getAuth } from 'firebase/auth';
 
 const GroceryTable = () => {
     const [items, setItems] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [userId, setUserId] = useState(null);
 
+    // Get user ID after authentication
     useEffect(() => {
+        const auth = getAuth();
+        const unsubscribe = auth.onAuthStateChanged(user => {
+            setUserId(user ? user.uid : null); // Set userId based on auth state
+        });
+        return () => unsubscribe();
+    }, []);
+
+    // Fetch data from Firebase when userId is available
+    useEffect(() => {
+        if (!userId) return; // Skip fetching if no user is authenticated
+
         const itemsRef = ref(rtDatabase, 'items');
         const unsubscribe = onValue(itemsRef, (snapshot) => {
             const data = snapshot.val();
             if (data) {
                 const itemsList = Object.values(data)
-                    .filter((item) => item.displayPreferences?.showInItemList)
+                    .filter((item) => item.displayPreferences?.showInItemList && item.userId === userId)
                     .map((item) => ({
                         name: item.name,
                         price: item.price,
                     }));
                 setItems(itemsList);
+            } else {
+                setItems([]);
             }
         });
 
         return () => unsubscribe();
-    }, []);
+    }, [userId]); // Re-run when userId changes
 
     // Paginate items into chunks of 18
     const chunkArray = (array, size) => {
@@ -41,7 +57,7 @@ const GroceryTable = () => {
             setCurrentIndex((prevIndex) => (prevIndex + 1) % paginatedItems.length);
         }, 10000); // 10 seconds
 
-        return () => clearInterval(interval); // Cleanup
+        return () => clearInterval(interval); // Cleanup on unmount
     }, [paginatedItems]);
 
     // Ensure at least one page of items to display
@@ -68,9 +84,7 @@ const GroceryTable = () => {
                         <React.Fragment key={rowIndex}>
                             {/* First item in each row */}
                             <div
-                                className={`w-full text-center ${
-                                    rowIndex % 2 === 0 ? 'bg-[#ddffd1]' : 'bg-[#c2c2c2bd]'
-                                } px-8 py-2 font-bold lg:font-medium 2xl:text-[38px]`}
+                                className={`w-full text-center ${rowIndex % 2 === 0 ? 'bg-[#ddffd1]' : 'bg-[#c2c2c2bd]'} px-8 py-2 font-bold lg:font-medium 2xl:text-[38px]`}
                             >
                                 {row[0]?.name} -{' '}
                                 <span className="text-[#000000] font-bold">{row[0]?.price}</span>
@@ -79,9 +93,7 @@ const GroceryTable = () => {
                             {/* Second item in each row */}
                             {row[1] && (
                                 <div
-                                    className={`w-full text-center ${
-                                        rowIndex % 2 === 0 ? 'bg-[#ddffd1]' : 'bg-[#c2c2c2bd]'
-                                    } px-8 py-2 font-bold 2xl:text-[38px] lg:font-medium`}
+                                    className={`w-full text-center ${rowIndex % 2 === 0 ? 'bg-[#ddffd1]' : 'bg-[#c2c2c2bd]'} px-8 py-2 font-bold 2xl:text-[38px] lg:font-medium`}
                                 >
                                     {row[1]?.name} -{' '}
                                     <span className="text-[#000000] font-bold">{row[1]?.price}</span>

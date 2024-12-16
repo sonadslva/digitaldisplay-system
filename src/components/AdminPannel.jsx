@@ -3,14 +3,21 @@ import { BsFillPlusSquareFill } from "react-icons/bs";
 import { LuSearch } from "react-icons/lu";
 import { MdModeEditOutline, MdDelete, MdSave, MdCancel } from "react-icons/md";
 import { Link } from "react-router-dom";
-import { ref, onValue, update, remove } from 'firebase/database';
-import { rtDatabase } from './Firebase';
+import { ref, onValue, update, remove, Database, set  } from 'firebase/database';
+import { collection, addDoc } from "firebase/firestore";
+import { rtDatabase ,db } from './Firebase';
 import { auth } from './Firebase';
 import { Navigate } from "react-router-dom"
 import UploadBackgroundVideo from "./UploadBackgroundVideo";
 import { SiGoogledisplayandvideo360 } from "react-icons/si";
 import logo from "../assets/logo.png"
-
+import * as XLSX from 'xlsx';
+import axios from "axios";
+import { push } from "firebase/database";
+import {  uploadBytes, getDownloadURL } from 'firebase/storage';
+import { updateDoc, doc,setDoc } from 'firebase/firestore';
+import Home from "./Home";
+import { useNavigate } from 'react-router-dom';
 
 const AdminPannel = () => {
   const [items, setItems] = useState([]);
@@ -21,25 +28,40 @@ const AdminPannel = () => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [editedItems, setEditedItems] = useState({});
   const [isUploading, setIsUploading] = useState(false);
+  const [excelData, setExcelData] = useState([]); 
+  const [fileName, setFileName] = useState(''); 
+  
+  const [isUploading1, setIsUploading1] = useState(false);
+
+ 
 
   
+
   useEffect(() => {
-    const itemsRef = ref(rtDatabase, 'items');
-    const unsubscribe = onValue(itemsRef, (snapshot) => {
-      const data = snapshot.val();
-      const itemsList = data 
-        ? Object.keys(data).map(key => ({
-            id: key,
-            ...data[key]
-          }))
-        : [];
-      setItems(itemsList);
-    });
-
-    // fetchVideos();
-
-    return () => unsubscribe();
+    // Ensure that the auth object and currentUser are loaded
+    if (auth.currentUser) {
+      const itemsRef = ref(rtDatabase, 'items');
+      
+      // Listen to the real-time database and filter items based on the logged-in user's ID
+      const unsubscribe = onValue(itemsRef, (snapshot) => {
+        const data = snapshot.val();
+        const itemsList = data 
+          ? Object.keys(data).map(key => ({
+              id: key,
+              ...data[key]
+            }))
+          : [];
+    
+        // Filter items to match the logged-in user ID
+        const filteredItems = itemsList.filter(item => item.userId === auth.currentUser.uid);
+        setItems(filteredItems);
+      });
+  
+      return () => unsubscribe(); 
+    }
   }, []);
+  
+  
 
   const fetchItems = async () => {
     try {
@@ -54,20 +76,7 @@ const AdminPannel = () => {
     }
   };
 
-  // Fetch videos from Firestore
-  // const fetchVideos = async () => {
-  //   try {
-  //     const videosQuery = query(collection(db, 'videos'), orderBy('uploadedAt', 'desc'));
-  //     const querySnapshot = await getDocs(videosQuery);
-  //     const videosList = querySnapshot.docs.map(doc => ({
-  //       id: doc.id,
-  //       ...doc.data()
-  //     }));
-  //     setVideos(videosList);
-  //   } catch (error) {
-  //     console.error('Error fetching videos:', error);
-  //   }
-  // };
+  
 
   const handleToggleStatus = async (id) => {
     try {
@@ -147,71 +156,183 @@ const AdminPannel = () => {
       console.error('Error updating display preferences:', error);
     }
   };
+  const navigate = useNavigate();
 
-  // const handleVideoUpload = async (event) => {
-  //   const file = event.target.files[0];
-  //   if (!file) return;
-
-  //   setIsUploading(true);
-  //   try {
-  //     // Convert video to base64
-  //     const base64Video = await convertFileToBase64(file);
-      
-  //     // Save to Firestore
-  //     await addDoc(collection(db, 'videos'), {
-  //       name: file.name,
-  //       videoData: base64Video,
-  //       uploadedAt: new Date().toISOString(),
-  //       duration: await getVideoDuration(file)
-  //     });
-
-  //     // Refresh videos list
-  //     fetchVideos();
-  //     alert('Video uploaded successfully!');
-  //   } catch (error) {
-  //     console.error('Error uploading video:', error);
-  //     alert('Error uploading video. Please try again.');
-  //   } finally {
-  //     setIsUploading(false);
-  //   }
-  // };
-
-  // Helper function to convert file to base64
-  // const convertFileToBase64 = (file) => {
-  //   return new Promise((resolve, reject) => {
-  //     const reader = new FileReader();
-  //     reader.readAsDataURL(file);
-  //     reader.onload = () => resolve(reader.result);
-  //     reader.onerror = (error) => reject(error);
-  //   });
-  // };
-
-   // Helper function to get video duration
-  //  const getVideoDuration = (file) => {
-  //   return new Promise((resolve) => {
-  //     const video = document.createElement('video');
-  //     video.preload = 'metadata';
-  //     video.onloadedmetadata = () => {
-  //       window.URL.revokeObjectURL(video.src);
-  //       resolve(video.duration);
-  //     };
-  //     video.src = URL.createObjectURL(file);
-  //   });
-  // };
-
-  // Logout Function
   const handleLogout = async () => {
     try {
-      await auth.signOut();   
-      Navigate("/login");        
+      await auth.signOut();  
+      navigate("/login");    
     } catch (error) {
       console.error("Logout failed:", error.message);
     }
   };
+ 
+ 
+   
+  
+    // Handle file upload and parse Excel
+    const handleFileUpload = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+  
+      const reader = new FileReader();
+      reader.onload = (event) => {
+          const data = new Uint8Array(event.target.result);
+          const workbook = XLSX.read(data, { type: "array" });
+          const sheetName = workbook.SheetNames[0];
+          const sheet = workbook.Sheets[sheetName];
+          const parsedData = XLSX.utils.sheet_to_json(sheet); // Parse to JSON
+  
+          // Check if parsed data is empty
+          if (parsedData.length === 0) {
+              alert("No data in the Excel file.");
+              return;
+          }
+  
+          setExcelData(parsedData); // Set parsed data to state
+          
+      };
+      reader.readAsArrayBuffer(file);
+    
+  
+      // No need to check here, move this to the onload function
+      setIsUploading1(true);
+      alert("click upload to add data!")
+    };
+    const uploadExcelData = async () => {
+      setIsUploading(true);
+  
+      try {
+          const firestorePromises = [];
+          const realtimeDbPromises = [];
+  
+          // Loop through the Excel data and prepare the data for Firebase upload
+          excelData.forEach((row) => {
+              // Find the existing item by name
+              const existingItem = items.find(item => item.name === row.name);
+              
+              if (existingItem) {
+                  // If the item name matches, update the price
+                  const updatedItemData = {
+                      price: row.price || 0, // Only update the price field
+                      updatedAt: new Date().toISOString(), // Optionally add a timestamp for updates
+                  };
+  
+                  // Update data in Firestore
+                  const itemDocRef = doc(db, 'items', existingItem.id); // Assuming `existingItem.id` is the Firestore document ID
+                  firestorePromises.push(updateDoc(itemDocRef, updatedItemData));
+  
+                  // Update data in Realtime Database
+                  const itemRef = ref(rtDatabase, 'items/' + existingItem.id); // Assuming `existingItem.id` is the key in Realtime DB
+                  realtimeDbPromises.push(update(itemRef, updatedItemData));
+              } else {
+                  // If the item doesn't exist, create a new item
+                  const newItemData = {
+                      name: row.name || "Unnamed",
+                      price: row.price || 0,
+                      image: '',
+                      status: "active",
+                      createdAt: new Date().toISOString(),
+                      updatedAt: new Date().toISOString(),
+                      userId: auth.currentUser.uid,
+                      displayPreferences: {
+                          showInItemList: false,
+                          showInListScroll: false,
+                          showInSingleScroll: false
+                      }
+                  };
+  
+                  // Add the new item to Firestore
+                  firestorePromises.push(addDoc(collection(db, 'items'), newItemData));
+  
+                  // Add the new item to Realtime Database
+                  const newItemRef = push(ref(rtDatabase, 'items'));
+                  realtimeDbPromises.push(set(newItemRef, newItemData));
+              }
+          });
+  
+          // Wait for both Firestore and Realtime Database uploads to complete
+          await Promise.all([...firestorePromises, ...realtimeDbPromises]);
+  
+          alert("Data uploaded successfully!");
+          setExcelData([]); // Clear the excelData after successful upload
+      } catch (error) {
+          console.error("Error uploading data:", error);
+          alert("Error uploading data. Please try again.");
+      } finally {
+          setIsUploading(false);
+      }
+  };
+  
 
+    //image add
+      
+    const [imagePreview, setImagePreview] = useState(null);
+    const [base64Image, setBase64Image] = useState(null);
+    const [isUploading2, setIsUploading2] = useState(false);
+    const [currentItemId, setCurrentItemId] = useState(null);
+  
+    const handleImageButtonClick = (id) => {
+      setCurrentItemId(id); // Set the current item ID
+      document.getElementById(`img-input-${id}`).click(); // Trigger specific file input
+    };
+  
+    const imageUpdate = (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        if (file.size > 500000) { // 500KB limit
+          alert("Image size should be less than 500KB");
+          return;
+        }
+  
+        setIsUploading2(true);
+  
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64String = reader.result; // Convert file to Base64 string
+          setBase64Image(base64String);
+          setImagePreview(base64String);
+          setIsUploading2(false);
+        };
+        reader.readAsDataURL(file); // Start reading the file
+      }
+    };
+  
+    const handleAddImageToItem = async () => {
+      if (!currentItemId || !base64Image) {
+        alert("Please select an image");
+        return;
+      }
+    
+      try {
+        const itemData = {
+          image: base64Image, // Store Base64 string
+        };
+    
+       // First, check if the item exists in Firestore
+    const firestoreRef = doc(db, "items", currentItemId);
+    
+    // Use setDoc with merge option to create or update the document
+    await setDoc(firestoreRef, itemData, { merge: true });
 
+    // Update Realtime Database
+    const realtimeRef = ref(rtDatabase, `items/${currentItemId}`);
+    await update(realtimeRef, itemData);
+
+    alert("Item updated with new image!");
+
+    setImagePreview(null);
+    setBase64Image(null);
+    setCurrentItemId(null);
+      } catch (error) {
+        console.error("Error updating item:", error);
+        alert("Error updating item. Please try again.");
+      }
+     
+    };
+    
   return (
-    <div className=" BgBackground h-screen overflow-auto relative z-[999]">
+    <div className=" BgBackground h-screen overflow-auto relative z-[999] bg-[#fff]">
       <section>
         <div className="flex w-full justify-center items-center flex-col mb-10">
           {/* Navbar */}
@@ -220,7 +341,10 @@ const AdminPannel = () => {
               <div className="w-[100px] md:w-[130px] h-auto">
                 <img src={logo} className="w-full h-full object-contain drop-shadow-md" alt="" />
               </div>
-              <button className="text-lg lg:text-xl font-semibold" onClick={handleLogout}>Logout</button>
+              <div className="flex justify-evenly space-x-4">
+              <button className="lg:font-bold font-medium lg:text-2xl text-[#000] " onClick={() => navigate("/home")}>HOME</button>
+              <button className="lg:font-bold font-medium lg:text-2xl text-[#000] " onClick={handleLogout}>LOGOUT</button>
+              </div>
             </div>
           </div>
 
@@ -240,6 +364,21 @@ const AdminPannel = () => {
                 </Link>
               </div>
               <div className="grid grid-cols-1 place-content-center md:flex justify-center items-center gap-3">
+                <div>
+                  <button className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold" onClick={() => document.getElementById('file-input').click()}>Import Excel</button>
+                  <input
+                    id="file-input"
+                    type="file"
+                    accept=".xlsx, .xls"
+                    style={{ display: 'none' }} // Hide the input element
+                    onChange={handleFileUpload}
+                    />
+                </div>
+                <div>
+                <button className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold" onClick={uploadExcelData} disabled={isUploading || excelData.length === 0}>
+                {isUploading ? "Uploading..." : "Upload Data"}
+              </button>
+                </div>
                 <div className="relative flex justify-center items-center">
                   <input
                     type="text"
@@ -369,12 +508,42 @@ const AdminPannel = () => {
                     </td>
                     <td className="p-2">
                       <div className="flex justify-center items-center">
-                        <div className="w-[50px] h-[50px] rounded-lg bg-[#fff] flex justify-center items-center">
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className="w-full h-full object-cover rounded-lg"
-                          />
+                        <div className="w-[50px] h-[50px] rounded-lg bg-[#fff] flex justify-center items-center bg-transparent">
+                        {item.image ? (
+                              <img
+                                src={item.image}
+                                alt="item"
+                                className="w-full h-full object-cover rounded-lg"
+                              />
+                            ) : (
+                              <>
+                                <button onClick={() => handleImageButtonClick(item.id)}>
+                                  {isUploading2 ? "Uploading..." : "+"}
+                                </button>
+                                <input
+                                  id={`img-input-${item.id}`}
+                                  type="file"
+                                  style={{ display: "none" }}
+                                  onChange={imageUpdate}
+                                  disabled={isUploading2}
+                                />
+                                {base64Image && currentItemId === item.id && (
+                                  <div className="bg-white" >
+                                    <img 
+                                      src={base64Image} 
+                                      alt="Preview" 
+                                      className="w-30 h-5 object-cover rounded-lg mx-auto mb-3"
+                                    />
+                                    <button 
+                                      onClick={handleAddImageToItem}
+                                      className="text-xs bg-green-500 text-white px-5 py-1 rounded inline-block w-50"
+                                    >
+                                      Upload
+                                    </button>
+                                  </div>
+                                )}
+                              </>
+                            )}
                         </div>
                       </div>
                     </td>
@@ -427,6 +596,7 @@ const AdminPannel = () => {
             </table>
           </div>
         </div>
+        
       </section>
     </div>
   );

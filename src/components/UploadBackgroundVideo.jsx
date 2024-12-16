@@ -2,29 +2,50 @@ import React, { useState } from 'react';
 import { ref, push } from 'firebase/database';
 import { rtDatabase } from './Firebase';
 import { BsFillPlusSquareFill } from "react-icons/bs";
+import { getAuth } from 'firebase/auth';
 
 const UploadBackgroundVideo = () => {
-    const [embedUrl, setEmbedUrl] = useState('');
+  const [embedUrl, setEmbedUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
+  const auth = getAuth();
+  const user = auth.currentUser;
+
+  // YouTube ID Extraction Function
+  const extractYouTubeId = (url) => {
+    try {
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+      const match = url.match(regExp);
+      return match && match[2].length === 11 ? match[2] : null;
+    } catch (err) {
+      console.error('Error extracting YouTube ID', err);
+      return null;
+    }
+  };
+
+  // Format URL to Embed URL
+  const formatYouTubeEmbedUrl = (url) => {
+    const videoId = extractYouTubeId(url);
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+  };
 
   const handleVideoUpload = async () => {
-    if (!embedUrl) return;
+    if (!embedUrl || !user) return;
 
     setIsUploading(true);
     try {
-      // Extract video ID from YouTube embed URL
-      const videoId = embedUrl.match(/embed\/([\w-]+)/)?.[1];
+      // Extract and validate video ID from YouTube URL
+      const formattedUrl = formatYouTubeEmbedUrl(embedUrl);
       
-      if (!videoId) {
+      if (!formattedUrl) {
         alert('Please enter a valid YouTube embed URL');
         return;
       }
 
-      // Save to Firebase
-      const videosRef = ref(rtDatabase, 'videos');
-      await push(videosRef, {
-        url: embedUrl,
-        videoId: videoId,
+      // Save to Firebase under the specific user's videos
+      const userVideosRef = ref(rtDatabase, `users/${user.uid}/videos`);
+      await push(userVideosRef, {
+        url: formattedUrl,
+        videoId: formattedUrl.split("/").pop(), // Extract videoId from embed URL
         uploadedAt: new Date().toISOString(),
       });
 
@@ -55,7 +76,7 @@ const UploadBackgroundVideo = () => {
         {isUploading ? 'Uploading...' : 'Upload Video'} <span><BsFillPlusSquareFill /></span>
       </button>
     </div>
-  )
+  );
 }
 
-export default UploadBackgroundVideo
+export default UploadBackgroundVideo;

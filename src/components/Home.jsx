@@ -1,11 +1,24 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate hook
 import ProductScroll from './ProductScroll';
 import GroceryTable from './GroceryTable';
 import SingleProductSlider from './SingleProductSlider';
 import { Link } from 'react-router-dom';
 import logo from "../assets/logo.png"
+import { auth } from './Firebase';
 
 const Home = () => {
+  const navigate = useNavigate(); // Use the useNavigate hook for navigation
+
+  const handleLogout = async () => {
+    try {
+      await auth.signOut();  
+      navigate("/login");    
+    } catch (error) {
+      console.error("Logout failed:", error.message);
+    }
+  };
+
   return (
     <div className="h-screen w-full overflow-auto lg:overflow-hidden">
       {/* Logo Section */}
@@ -14,9 +27,12 @@ const Home = () => {
           <div className="w-[100px] md:w-[130px] h-auto">
             <img src={logo} className="w-full h-full object-contain drop-shadow-md" alt="" />
           </div>
-          <Link to="/login">
-            <div className='lg:font-bold font-medium lg:text-2xl text-[#000]'>Login</div>
+          <div className='flex justify-evenly space-x-4' >
+          <Link to="/admin">
+            <div className='lg:font-bold font-medium lg:text-2xl text-[#000]'>DATABASE</div>
           </Link>
+          <button className="lg:font-bold font-medium lg:text-2xl text-[#000]" onClick={handleLogout}>LOGOUT</button>
+          </div>
         </nav>
       </section>
 
