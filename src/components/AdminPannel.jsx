@@ -258,7 +258,7 @@ const AdminPannel = () => {
           setExcelData([]); // Clear the excelData after successful upload
       } catch (error) {
           console.error("Error uploading data:", error);
-          alert("Error uploading data. Please try again.");
+          // alert("Error uploading data. Please try again.");
       } finally {
           setIsUploading(false);
       }
@@ -375,10 +375,19 @@ const AdminPannel = () => {
                     />
                 </div>
                 <div>
-                <button className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold" onClick={uploadExcelData} disabled={isUploading || excelData.length === 0}>
-                {isUploading ? "Uploading..." : "Upload Data"}
-              </button>
-                </div>
+                    {excelData.length > 0 && !isUploading && (  // Only show button if there's data and not uploading
+                      <div>
+                        <button
+                          className="flex justify-center items-center gap-2 text-[#000] bg-green-500 px-8 py-2 rounded-lg font-semibold"
+                          onClick={uploadExcelData}
+                          disabled={isUploading || excelData.length === 0}
+                        >
+                          {isUploading ? "Uploading..." : "Upload Data"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
                 <div className="relative flex justify-center items-center">
                   <input
                     type="text"

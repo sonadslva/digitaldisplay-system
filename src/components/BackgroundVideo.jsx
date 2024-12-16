@@ -31,7 +31,7 @@ const BackgroundVideo = ({ onShowHome }) => {
   // Fetch the user ID and videos
   useEffect(() => {
     // Set up a listener for authentication state
-    if (isLoading || !userId || userEmail === 'superadmin@gmail.com') return;
+    // if (isLoading || !userId || userEmail === 'superadmin@gmail.com') return;
   
     const unsubscribeAuth = auth.onAuthStateChanged((user) => {
       if (user) {
@@ -99,7 +99,7 @@ const BackgroundVideo = ({ onShowHome }) => {
     initialTimer = setTimeout(() => {
       setShowVideo(true);
       onShowHome(false);
-    }, 1000); // 1-second delay for testing
+    }, 60000); // 1-second delay for testing
 
     // Rotation logic for subsequent videos
     rotationTimer = setInterval(() => {

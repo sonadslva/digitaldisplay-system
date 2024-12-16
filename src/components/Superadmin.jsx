@@ -201,13 +201,13 @@ const incrementDaysForUsers = async () => {
                   <button 
                     onClick={mode === 'edit' ? () => handleEditUser(editingUser) : handleDeleteUsers}
                     disabled={mode === 'edit' ? !editingUser : selectedUsers.length === 0}
-                    className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold"
+                    className="flex justify-center items-center gap-2 text-[#000] bg-green-500 px-8 py-2 rounded-lg font-semibold"
                   >
                     Confirm {mode === 'edit' ? 'Edit' : 'Delete'}
                   </button>
                   <button 
                     onClick={handleCancelMode}
-                    className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold"
+                    className="flex justify-center items-center gap-2 text-[#000] bg-red-500 px-8 py-2 rounded-lg font-semibold"
                   >
                     Cancel
                   </button>
