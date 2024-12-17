@@ -9,6 +9,7 @@ import BackgroundVideo from './components/BackgroundVideo';
 import ProfileVideo from './components/ProfileVideo';
 import Superadmin from './components/Superadmin';
 import Adduser from './components/Adduser';
+import Settings from './components/Settings';
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showHome, setShowHome] = useState(true);
@@ -36,6 +37,7 @@ function App() {
         <Route path="/BackgroundVideo" element={<ProtectedRoute element={<ProfileVideo />} />} />
         <Route path='/Superadmin' element={<Superadmin/>}/>
         <Route path='/Adduser' element={<Adduser/>}></Route>
+        <Route path='/Settings' element={<Settings/>}></Route>
       </Routes>
       <div>
         {showHome && <Login />}

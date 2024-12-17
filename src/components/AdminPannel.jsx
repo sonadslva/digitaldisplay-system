@@ -18,7 +18,11 @@ import {  uploadBytes, getDownloadURL } from 'firebase/storage';
 import { updateDoc, doc,setDoc } from 'firebase/firestore';
 import Home from "./Home";
 import { useNavigate } from 'react-router-dom';
-
+import { FaUserAltSlash } from "react-icons/fa";
+import { FaDisplay } from "react-icons/fa6";
+import { PiMicrosoftExcelLogoBold } from "react-icons/pi";
+import { IoIosAdd } from "react-icons/io";
+import { IoMdSettings } from "react-icons/io";
 const AdminPannel = () => {
   const [items, setItems] = useState([]);
   // const [videos, setVideos] = useState([]);
@@ -167,10 +171,6 @@ const AdminPannel = () => {
     }
   };
  
- 
-   
-  
-    // Handle file upload and parse Excel
     const handleFileUpload = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
@@ -183,87 +183,84 @@ const AdminPannel = () => {
           const sheet = workbook.Sheets[sheetName];
           const parsedData = XLSX.utils.sheet_to_json(sheet); // Parse to JSON
   
-          // Check if parsed data is empty
+          
           if (parsedData.length === 0) {
               alert("No data in the Excel file.");
               return;
           }
   
-          setExcelData(parsedData); // Set parsed data to state
-          
+          setExcelData(parsedData); 
       };
       reader.readAsArrayBuffer(file);
     
   
-      // No need to check here, move this to the onload function
+      
       setIsUploading1(true);
-      alert("click upload to add data!")
+      // alert("click upload to add data!")
     };
     const uploadExcelData = async () => {
       setIsUploading(true);
-  
+    
       try {
-          const firestorePromises = [];
-          const realtimeDbPromises = [];
-  
-          // Loop through the Excel data and prepare the data for Firebase upload
-          excelData.forEach((row) => {
-              // Find the existing item by name
-              const existingItem = items.find(item => item.name === row.name);
-              
-              if (existingItem) {
-                  // If the item name matches, update the price
-                  const updatedItemData = {
-                      price: row.price || 0, // Only update the price field
-                      updatedAt: new Date().toISOString(), // Optionally add a timestamp for updates
-                  };
-  
-                  // Update data in Firestore
-                  const itemDocRef = doc(db, 'items', existingItem.id); // Assuming `existingItem.id` is the Firestore document ID
-                  firestorePromises.push(updateDoc(itemDocRef, updatedItemData));
-  
-                  // Update data in Realtime Database
-                  const itemRef = ref(rtDatabase, 'items/' + existingItem.id); // Assuming `existingItem.id` is the key in Realtime DB
-                  realtimeDbPromises.push(update(itemRef, updatedItemData));
-              } else {
-                  // If the item doesn't exist, create a new item
-                  const newItemData = {
-                      name: row.name || "Unnamed",
-                      price: row.price || 0,
-                      image: '',
-                      status: "active",
-                      createdAt: new Date().toISOString(),
-                      updatedAt: new Date().toISOString(),
-                      userId: auth.currentUser.uid,
-                      displayPreferences: {
-                          showInItemList: false,
-                          showInListScroll: false,
-                          showInSingleScroll: false
-                      }
-                  };
-  
-                  // Add the new item to Firestore
-                  firestorePromises.push(addDoc(collection(db, 'items'), newItemData));
-  
-                  // Add the new item to Realtime Database
-                  const newItemRef = push(ref(rtDatabase, 'items'));
-                  realtimeDbPromises.push(set(newItemRef, newItemData));
+        const firestorePromises = [];
+        const realtimeDbPromises = [];
+    
+        excelData.forEach((row) => {
+          // Find the existing item by name
+          const formattedItemName = row.name ? row.name.toUpperCase() : "UNNAMED";
+          const existingItem = items.find(item => item.name === formattedItemName);
+    
+          if (existingItem) {
+            const updatedItemData = {
+              price: row.price || 0,
+              updatedAt: new Date().toISOString(),
+            };
+    
+            // Update data in Firestore
+            const itemDocRef = doc(db, 'items', existingItem.id); // Assuming `existingItem.id` is the Firestore document ID
+            firestorePromises.push(updateDoc(itemDocRef, updatedItemData));
+    
+            // Update data in Realtime Database
+            const itemRef = ref(rtDatabase, 'items/' + existingItem.id); // Assuming `existingItem.id` is the key in Realtime DB
+            realtimeDbPromises.push(update(itemRef, updatedItemData));
+          } else {
+            // If the item doesn't exist, create a new item
+            const newItemData = {
+              name: formattedItemName,
+              price: row.price || 0,
+              image: '',
+              status: "active",
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              userId: auth.currentUser.uid,
+              displayPreferences: {
+                showInItemList: false,
+                showInListScroll: false,
+                showInSingleScroll: false
               }
-          });
-  
-          // Wait for both Firestore and Realtime Database uploads to complete
-          await Promise.all([...firestorePromises, ...realtimeDbPromises]);
-  
-          alert("Data uploaded successfully!");
-          setExcelData([]); // Clear the excelData after successful upload
+            };
+    
+            // Add the new item to Firestore
+            firestorePromises.push(addDoc(collection(db, 'items'), newItemData));
+    
+            // Add the new item to Realtime Database
+            const newItemRef = push(ref(rtDatabase, 'items'));
+            realtimeDbPromises.push(set(newItemRef, newItemData));
+          }
+        });
+    
+        // Wait for both Firestore and Realtime Database uploads to complete
+        await Promise.all([...firestorePromises, ...realtimeDbPromises]);
+    
+        alert("Data uploaded successfully!");
+        setExcelData([]); // Clear the excelData after successful upload
       } catch (error) {
-          console.error("Error uploading data:", error);
-          // alert("Error uploading data. Please try again.");
+        console.error("Error uploading data:", error);
+        // alert("Error uploading data. Please try again.");
       } finally {
-          setIsUploading(false);
+        setIsUploading(false);
       }
-  };
-  
+    };
 
     //image add
       
@@ -342,8 +339,8 @@ const AdminPannel = () => {
                 <img src={logo} className="w-full h-full object-contain drop-shadow-md" alt="" />
               </div>
               <div className="flex justify-evenly space-x-4">
-              <button className="lg:font-bold font-medium lg:text-2xl text-[#000] " onClick={() => navigate("/home")}>HOME</button>
-              <button className="lg:font-bold font-medium lg:text-2xl text-[#000] " onClick={handleLogout}>LOGOUT</button>
+              <button className="lg:font-bold font-medium lg:text-2xl text-[#000] " onClick={() => navigate("/home")}><FaDisplay /></button>
+              <button className="lg:font-bold font-medium lg:text-2xl text-[#000] " onClick={handleLogout}><FaUserAltSlash /></button>
               </div>
             </div>
           </div>
@@ -362,10 +359,17 @@ const AdminPannel = () => {
                     Bg Video <span><SiGoogledisplayandvideo360 /></span>
                   </div>
                 </Link>
+                <Link to="/Settings">
+                  <div className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold">
+                    <IoMdSettings />
+
+                
+                  </div>
+                </Link>
               </div>
               <div className="grid grid-cols-1 place-content-center md:flex justify-center items-center gap-3">
                 <div>
-                  <button className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold" onClick={() => document.getElementById('file-input').click()}>Import Excel</button>
+                  <button className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold" onClick={() => document.getElementById('file-input').click()}>Import <PiMicrosoftExcelLogoBold /></button>
                   <input
                     id="file-input"
                     type="file"
@@ -464,6 +468,7 @@ const AdminPannel = () => {
                   {isDeleteMode && <th className="p-2">Select</th>}
                   <th className="p-2">No</th>
                   <th className="p-2">Name</th>
+                  <th className="p-2">Native Name</th>
                   <th className="p-2">Price</th>
                   <th className="p-2">Image</th>
                   <th className="p-2">Status</th>
@@ -506,6 +511,18 @@ const AdminPannel = () => {
                     <td className="p-2 text-center">
                       {isEditMode ? (
                         <input
+                          type="text"
+                          value={editedItems[item.id]?.nativeName ?? item.nativeName}
+                          onChange={(e) => handleEdit(item.id, 'name', e.target.value)}
+                          className="px-2 py-1 border rounded"
+                        />
+                      ) : (
+                        item.nativeName
+                      )}
+                    </td>
+                    <td className="p-2 text-center">
+                      {isEditMode ? (
+                        <input
                           type="number"
                           value={editedItems[item.id]?.price ?? item.price}
                           onChange={(e) => handleEdit(item.id, 'price', Number(e.target.value))}
@@ -527,7 +544,7 @@ const AdminPannel = () => {
                             ) : (
                               <>
                                 <button onClick={() => handleImageButtonClick(item.id)}>
-                                  {isUploading2 ? "Uploading..." : "+"}
+                                  {isUploading2 ? "Uploading..." : <IoIosAdd />}
                                 </button>
                                 <input
                                   id={`img-input-${item.id}`}

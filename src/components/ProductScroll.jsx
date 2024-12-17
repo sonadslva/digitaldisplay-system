@@ -43,7 +43,7 @@ const ProductScroll = () => {
   const doubledProducts = [...products, ...products];
 
   return (
-    <div className="product-scroller overflow-hidden relative">
+    <div  className="product-scroller overflow-hidden relative">
       <div
         className="product-slider flex transition-transform duration-[15s] ease-linear"
         ref={sliderRef}
@@ -61,7 +61,7 @@ const ProductScroll = () => {
                 alt={product.name}
               />
             </div>
-            <div className="product-name absolute bottom-12 left-1/2 transform -translate-x-1/2 text-center font-bold text-lg text-white">
+            <div className="product-name absolute bottom-12 left-1/2 transform -translate-x-1/2 text-center font-bold text-lg text-black">
               {product.name}
             </div>
             <div className="product-price flex w-full justify-center items-center bg-[#1d485f] absolute bottom-0 gap-1 text-xl lg:text-[45px] font-semibold text-[#fff]">

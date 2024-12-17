@@ -32,7 +32,8 @@ const SingleProductSlider = () => {
                     .map(item => ({
                         img: item.image || 'path-to-fallback-image.jpg', // Fallback if no image
                         price: item.price,
-                        name: item.name
+                        name: item.name,
+                        nativeName: item.nativeName || ''
                     }));
                 setProducts(productsList);
             } else {
@@ -77,8 +78,9 @@ const SingleProductSlider = () => {
                                     </div>
 
                                     {/* Product Name Section */}
-                                    <div className="text-center font-extrabold text-xl lg:text-[32px] text-[#201e1e] mb-4 PriceName">
+                                    <div className="text-center font-extrabold flex flex-col text-xl lg:text-[32px] text-[#201e1e] mb-4 PriceName">
                                         {product.name}
+                                        <p className='text-[25px]'>{product.nativeName}</p>
                                     </div>
 
                                     {/* Price Section */}

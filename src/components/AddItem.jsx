@@ -7,6 +7,7 @@ import { getAuth } from 'firebase/auth';
 
 const AddItem = () => {
     const [itemName, setItemName] = useState('');
+    const [nativeItemName ,setNativeItemName]=useState('');
     const [itemPrice, setItemPrice] = useState('');
     const [imagePreview, setImagePreview] = useState('');
     const [base64Image, setBase64Image] = useState('');
@@ -61,8 +62,10 @@ const AddItem = () => {
                 return;
             }
 
+            const formattedItemName = itemName.toUpperCase();
             const itemData = {
-                name: itemName,
+                name: formattedItemName,
+                nativeName: nativeItemName || '',
                 price: Number(itemPrice),
                 image: base64Image,
                 status: 'active',
@@ -101,7 +104,13 @@ const AddItem = () => {
                         onChange={(e) => setItemName(e.target.value)}
                         className='px-8 py-2 rounded-lg w-full border-none outline-none'
                     />
-                    
+                    <input
+                        type="text"
+                        placeholder='NativeItemName'
+                        value={nativeItemName}
+                        onChange={(e) => setNativeItemName(e.target.value)}
+                        className='px-8 py-2 rounded-lg w-full border-none outline-none'
+                    />
                     <input
                         type="number"
                         placeholder='Item Price'

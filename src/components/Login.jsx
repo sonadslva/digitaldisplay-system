@@ -25,7 +25,7 @@ const Login = () => {
     };
 
     return (
-        <div>
+        <div className='relative z-[998]'>
             <div className='flex justify-center items-center h-screen w-full px-2'>
                 <div className='w-full max-w-[600px] h-[400px] bg-[#fff] BgBackground rounded-3xl px-2 py-10 flex flex-col justify-center items-center'>
                     <div className='text-center font-bold text-3xl text-[#fff] mb-10'>Login</div>

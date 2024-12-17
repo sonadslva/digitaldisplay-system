@@ -1,4 +1,4 @@
-import React from 'react';
+import React,{useEffect,useState} from 'react';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate hook
 import ProductScroll from './ProductScroll';
 import GroceryTable from './GroceryTable';
@@ -6,10 +6,13 @@ import SingleProductSlider from './SingleProductSlider';
 import { Link } from 'react-router-dom';
 import logo from "../assets/logo.png"
 import { auth } from './Firebase';
-
+import { FaUserAltSlash } from "react-icons/fa";
+import { MdAddBox } from "react-icons/md";
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from './Firebase';
 const Home = () => {
   const navigate = useNavigate(); // Use the useNavigate hook for navigation
-
+  const [headerColor, setHeaderColor] = useState("#000");
   const handleLogout = async () => {
     try {
       await auth.signOut();  
@@ -18,20 +21,39 @@ const Home = () => {
       console.error("Logout failed:", error.message);
     }
   };
+  useEffect(() => {
+    const fetchHeaderColor = async () => {
+      const userId = auth.currentUser?.uid; // Get current user ID
+      if (!userId) return; // Exit if no user logged in
 
+      try {
+        const userDocRef = doc(db, `userSettings/${userId}`);
+        const snapshot = await getDoc(userDocRef);
+
+        if (snapshot.exists()) {
+          const data = snapshot.data();
+          setHeaderColor(data.headerColor || "#000"); // Set header color
+        }
+      } catch (error) {
+        console.error("Error fetching header color:", error);
+      }
+    };
+
+    fetchHeaderColor();
+  }, []);
   return (
     <div className="h-screen w-full overflow-auto lg:overflow-hidden">
       {/* Logo Section */}
-      <section className="w-full py-3 bg-[#000] NavbarBg fixed top-0 left-0 z-[998]">
-        <nav className="px-4 flex justify-between items-center">
+      <section  style={{ backgroundColor: headerColor || "NavbarBg"  }} className="w-full py-3 bg-[#000]  fixed top-0 left-0 z-[998]">
+        <nav className="px-4 flex justify-between items-center h-[35px]">
           <div className="w-[100px] md:w-[130px] h-auto">
             <img src={logo} className="w-full h-full object-contain drop-shadow-md" alt="" />
           </div>
           <div className='flex justify-evenly space-x-4' >
           <Link to="/admin">
-            <div className='lg:font-bold font-medium lg:text-2xl text-[#000]'>DATABASE</div>
+            <div className='lg:font-bold font-medium lg:text-2xl text-[#000]'><MdAddBox /></div>
           </Link>
-          <button className="lg:font-bold font-medium lg:text-2xl text-[#000]" onClick={handleLogout}>LOGOUT</button>
+          <button className="lg:font-bold font-medium lg:text-2xl text-[#000]" onClick={handleLogout}><FaUserAltSlash /></button>
           </div>
         </nav>
       </section>
