@@ -30,7 +30,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path='/login' element={<Login />}/>
+        <Route path='/' element={<Login />}/>
         <Route path="/Home" element={<Home />} />
         <Route path="/admin" element={<ProtectedRoute element={<AdminPannel />} />} />
         <Route path="/addItem" element={<ProtectedRoute element={<AddItem />} />} />
