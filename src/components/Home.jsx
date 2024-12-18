@@ -21,7 +21,7 @@ const Home = () => {
   const handleLogout = async () => {
     try {
       await auth.signOut();
-      navigate("/login");
+      navigate("/");
     } catch (error) {
       console.error("Logout failed:", error.message);
     }
@@ -41,7 +41,7 @@ const Home = () => {
 
         if (snapshot.exists()) {
           const data = snapshot.data();
-          setHeaderColor(data.headerColor || "rgb(23, 92, 27)");
+          setHeaderColor(data.headerColor || "rgb(8, 90, 12)");
           setLogo(data.logoBase64 || logoPlaceholder);
           setSingleScrollColor(data.singleScrollColor || "rgb(33, 129, 38)");
           setProductScrollColor(data.productScrollColor || "rgb(95, 191, 100)")

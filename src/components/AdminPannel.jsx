@@ -170,7 +170,7 @@ const AdminPannel = () => {
   const handleLogout = async () => {
     try {
       await auth.signOut();  
-      navigate("/login");    
+      navigate("/");    
     } catch (error) {
       console.error("Logout failed:", error.message);
     }
