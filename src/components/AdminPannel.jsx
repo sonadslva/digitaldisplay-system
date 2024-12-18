@@ -23,6 +23,11 @@ import { FaDisplay } from "react-icons/fa6";
 import { PiMicrosoftExcelLogoBold } from "react-icons/pi";
 import { IoIosAdd } from "react-icons/io";
 import { IoMdSettings } from "react-icons/io";
+import {  getDoc } from 'firebase/firestore';
+import logoPlaceholder from '../assets/logo.png';
+
+
+
 const AdminPannel = () => {
   const [items, setItems] = useState([]);
   // const [videos, setVideos] = useState([]);
@@ -212,6 +217,7 @@ const AdminPannel = () => {
     
           if (existingItem) {
             const updatedItemData = {
+              
               price: row.price || 0,
               updatedAt: new Date().toISOString(),
             };
@@ -227,6 +233,7 @@ const AdminPannel = () => {
             // If the item doesn't exist, create a new item
             const newItemData = {
               name: formattedItemName,
+              nativeName:row.nativename||"",
               price: row.price || 0,
               image: '',
               status: "active",
@@ -327,21 +334,48 @@ const AdminPannel = () => {
       }
      
     };
+      const [headerColor, setHeaderColor] = useState("rgb(23, 92, 27)");
+      const [logo, setLogo] = useState(logoPlaceholder);
+      
+       useEffect(() => {
+          const fetchHeaderData = async () => {
+            const userId = auth.currentUser?.uid; // Get the current user ID
+            if (!userId) return; // Exit if no user is logged in
+      
+            try {
+              const userDocRef = doc(db, `userSettings/${userId}`);
+              const snapshot = await getDoc(userDocRef);
+      
+              if (snapshot.exists()) {
+                const data = snapshot.data();
+                setHeaderColor(data.headerColor || "rgb(23, 92, 27)"); 
+                setLogo(data.logoBase64 || logoPlaceholder); 
+                
+              }
+            } catch (error) {
+              console.error("Error fetching header data:", error);
+            }
+          };
+      
+          fetchHeaderData();
+        }, []);
     
   return (
-    <div className=" BgBackground h-screen overflow-auto relative z-[999] bg-[#fff]">
-      <section>
-        <div className="flex w-full justify-center items-center flex-col mb-10">
+    <div className="  h-screen overflow-auto relative z-[999] bg-white">
+      <section >
+        <div  className="flex w-full justify-center items-center flex-col mb-10">
           {/* Navbar */}
-          <div className="w-full px-2 py-3 mb-5 NavbarBg">
-            <div className="flex justify-between font-bold px-6 items-center text-3xl">
-              <div className="w-[100px] md:w-[130px] h-auto">
+          <div  className="w-full  mb-5 ">
+            <div  style={{ backgroundColor: headerColor || "#008000"  }} className="w-full h-[60px]">
+            <div className="flex justify-between font-bold px-6 items-center text-3xl w-full h-full">
+              <div  className="w-[100px] md:w-[130px] h-auto">
                 <img src={logo} className="w-full h-full object-contain drop-shadow-md" alt="" />
               </div>
               <div className="flex justify-evenly space-x-4">
-              <button className="lg:font-bold font-medium lg:text-2xl text-[#000] " onClick={() => navigate("/home")}><FaDisplay /></button>
-              <button className="lg:font-bold font-medium lg:text-2xl text-[#000] " onClick={handleLogout}><FaUserAltSlash /></button>
+              <button className="lg:font-bold font-medium lg:text-2xl text-[#000] bg-[#fff] p-2 rounded-full " onClick={() => navigate("/home")}><FaDisplay /></button>
+              <button className="lg:font-bold font-medium lg:text-2xl text-[#000] bg-[#fff] p-2 rounded-full " onClick={handleLogout}><FaUserAltSlash /></button>
               </div>
+            </div>
             </div>
           </div>
 
@@ -350,17 +384,17 @@ const AdminPannel = () => {
             <div className="grid grid-cols-1 place-items-center lg:flex items-center justify-center md:justify-between w-full px-6">
               <div className=" flex justify-center items-center gap-3 mb-5 lg:mb-0">
                 <Link to="/addItem">
-                  <div className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold">
+                  <div className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300">
                     Add Item <span><BsFillPlusSquareFill /></span>
                   </div>
                 </Link>
                 <Link to="/BackgroundVideo">
-                  <div className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold">
+                  <div className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300">
                     Bg Video <span><SiGoogledisplayandvideo360 /></span>
                   </div>
                 </Link>
                 <Link to="/Settings">
-                  <div className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold">
+                  <div className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-6 py-3 rounded-lg font-semibold border-2 bg-gray-300">
                     <IoMdSettings />
 
                 
@@ -369,7 +403,7 @@ const AdminPannel = () => {
               </div>
               <div className="grid grid-cols-1 place-content-center md:flex justify-center items-center gap-3">
                 <div>
-                  <button className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold" onClick={() => document.getElementById('file-input').click()}>Import <PiMicrosoftExcelLogoBold /></button>
+                  <button className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300 " onClick={() => document.getElementById('file-input').click()}>Import <PiMicrosoftExcelLogoBold /></button>
                   <input
                     id="file-input"
                     type="file"
@@ -382,7 +416,7 @@ const AdminPannel = () => {
                     {excelData.length > 0 && !isUploading && (  // Only show button if there's data and not uploading
                       <div>
                         <button
-                          className="flex justify-center items-center gap-2 text-[#000] bg-green-500 px-8 py-2 rounded-lg font-semibold"
+                          className="flex justify-center items-center gap-2 text-[#000] bg-green-500 px-8 py-2 rounded-lg font-semibold border-2 "
                           onClick={uploadExcelData}
                           disabled={isUploading || excelData.length === 0}
                         >
@@ -392,7 +426,7 @@ const AdminPannel = () => {
                     )}
                   </div>
 
-                <div className="relative flex justify-center items-center">
+                <div className="relative flex justify-center items-center border-2  rounded-lg">
                   <input
                     type="text"
                     placeholder="Search"
@@ -400,7 +434,7 @@ const AdminPannel = () => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="px-8 py-2 rounded-lg outline-none border-none"
                   />
-                  <span className="absolute right-2 text-2xl text-[#3c3c3c]">
+                  <span className="absolute right-2 text-2xl text-[#3c3c3c]  ">
                     <LuSearch />
                   </span>
                 </div>
@@ -408,7 +442,7 @@ const AdminPannel = () => {
                   <>
                     <button
                       onClick={handleSaveEdits}
-                      className="flex items-center gap-2 bg-green-500 text-white px-8 py-2 rounded-lg font-semibold"
+                      className="flex items-center gap-2 bg-green-500 text-white px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300"
                     >
                       Save <MdSave />
                     </button>
@@ -417,7 +451,7 @@ const AdminPannel = () => {
                         setIsEditMode(false);
                         setEditedItems({});
                       }}
-                      className="flex items-center gap-2 bg-red-500 text-white px-8 py-2 rounded-lg font-semibold"
+                      className="flex items-center gap-2 bg-red-500 text-white px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300"
                     >
                       Cancel <MdCancel />
                     </button>
@@ -425,7 +459,7 @@ const AdminPannel = () => {
                 ) : (
                   <button
                     onClick={() => setIsEditMode(true)}
-                    className="flex items-center gap-2 bg-[#fff] px-8 py-2 rounded-lg font-semibold"
+                    className="flex items-center gap-2 bg-[#fff] px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300"
                   >
                     Edit <MdModeEditOutline />
                   </button>
@@ -434,7 +468,7 @@ const AdminPannel = () => {
                   <>
                     <button
                       onClick={handleDeleteSelected}
-                      className="flex items-center gap-2 bg-red-500 text-white px-8 py-2 rounded-lg font-semibold"
+                      className="flex items-center gap-2 bg-red-500 text-white px-8 py-2 rounded-lg font-semibold border-2"
                     >
                       Confirm Delete
                     </button>
@@ -443,7 +477,7 @@ const AdminPannel = () => {
                         setIsDeleteMode(false);
                         setSelectedItems([]);
                       }}
-                      className="flex items-center gap-2 bg-[#fff] px-8 py-2 rounded-lg font-semibold"
+                      className="flex items-center gap-2 bg-[#fff] px-8 py-2 rounded-lg font-semibold border-2 bg-green-500"
                     >
                       Cancel
                     </button>
@@ -451,7 +485,7 @@ const AdminPannel = () => {
                 ) : (
                   <button
                     onClick={() => setIsDeleteMode(true)}
-                    className="flex items-center gap-2 bg-[#fff] px-8 py-2 rounded-lg font-semibold"
+                    className="flex items-center gap-2 bg-[#fff] px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300"
                   >
                     Delete <MdDelete />
                   </button>

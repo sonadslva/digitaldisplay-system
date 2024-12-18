@@ -67,11 +67,11 @@ const ProfileVideo = () => {
   };
 
   return (
-    <div className="h-screen w-full pt-4 fixed z-[999] bg-gradient-to-r from-[#aeff00] to-[#1e9546]">
+    <div className="h-screen w-full pt-4 fixed z-[999] bg-white">
       <div>
         <div className="flex flex-wrap justify-between px-4 mb-10">
           <Link to="/admin">
-            <button className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold">
+            <button className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300">
               Back
             </button>
           </Link>
@@ -79,7 +79,7 @@ const ProfileVideo = () => {
         </div>
 
         <div>
-          <div className="flex flex-wrap justify-center items-center gap-10">
+          <div className="flex flex-wrap justify-center items-center gap-10 ">
             {videos.map((video) => (
               <div key={video.id} className="w-80 h-48 border rounded-lg overflow-hidden shadow-md relative">
                 <iframe

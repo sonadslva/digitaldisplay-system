@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { toast } from 'react-hot-toast';
 import { Link } from 'react-router-dom';
@@ -7,17 +6,15 @@ import defaultLogo from "../assets/logo.png";
 import { db, auth } from "./Firebase";
 
 const Settings = () => {
-    // State for color settings
-    const [headerColor, setHeaderColor] = useState("#ffffff");
-    const [singleScrollColor, setSingleScrollColor] = useState("#ffffff");
-    const [productScrollColor, setProductScrollColor] = useState("#f0f0f0");
-    const [fontColor, setFontColor] = useState("#000000");
+    const [headerColor, setHeaderColor] = useState("rgb(23, 92, 27)");
+    const [singleScrollColor, setSingleScrollColor] = useState("rgb(33, 129, 38)");
+    const [productScrollColor, setProductScrollColor] = useState("rgb(95, 191, 100)");
+    const [fontColor, setFontColor] = useState("rgb(255, 255, 255)");
+    const [priceBackgroundColor, setPriceBackgroundColor] = useState("rgb(39, 125, 43)");
     const [logoPreview, setLogoPreview] = useState(null);
 
-    // Get current user ID
     const userId = auth.currentUser?.uid;
 
-    // Load existing settings on component mount
     useEffect(() => {
         if (!userId) return;
 
@@ -27,10 +24,11 @@ const Settings = () => {
                 const snapshot = await getDoc(userDocRef);
                 if (snapshot.exists()) {
                     const data = snapshot.data();
-                    setHeaderColor(data.headerColor || "#ffffff");
-                    setSingleScrollColor(data.singleScrollColor || "#ffffff");
-                    setProductScrollColor(data.productScrollColor || "#f0f0f0");
-                    setFontColor(data.fontColor || "#000000");
+                    setHeaderColor(data.headerColor || "rgb(23, 92, 27)");
+                    setSingleScrollColor(data.singleScrollColor || "rgb(33, 129, 38)");
+                    setProductScrollColor(data.productScrollColor || "rgb(95, 191, 100)");
+                    setFontColor(data.fontColor || "  #ffffff");
+                    setPriceBackgroundColor(data.priceBackgroundColor || "rgb(39, 125, 43)");
                     setLogoPreview(data.logoBase64 || null);
                 }
             } catch (error) {
@@ -42,7 +40,6 @@ const Settings = () => {
         fetchSettings();
     }, [userId]);
 
-    // Save color settings to Firestore
     const saveColorSetting = async (field, value, setState) => {
         try {
             const userDocRef = doc(db, `userSettings/${userId}`);
@@ -55,20 +52,19 @@ const Settings = () => {
         }
     };
 
-    // Color change handlers
     const handleHeaderColorChange = (e) => saveColorSetting("headerColor", e.target.value, setHeaderColor);
     const handleSingleScrollColorChange = (e) => saveColorSetting("singleScrollColor", e.target.value, setSingleScrollColor);
     const handleProductScrollColorChange = (e) => saveColorSetting("productScrollColor", e.target.value, setProductScrollColor);
     const handleFontColorChange = (e) => saveColorSetting("fontColor", e.target.value, setFontColor);
+    const handlePriceBackroundColorChange = (e) => saveColorSetting("priceBackgroundColor", e.target.value, setPriceBackgroundColor);
 
-    // Logo upload handler
     const handleLogoUpload = async (event) => {
         const file = event.target.files[0];
         if (!file) return;
 
         const reader = new FileReader();
         reader.onloadend = async () => {
-            const base64Logo = reader.result; // Convert to Base64
+            const base64Logo = reader.result;
             try {
                 const userDocRef = doc(db, `userSettings/${userId}`);
                 await setDoc(userDocRef, { logoBase64: base64Logo }, { merge: true });
@@ -79,10 +75,9 @@ const Settings = () => {
                 toast.error("Error uploading logo.");
             }
         };
-        reader.readAsDataURL(file); // Read the file as a base64 string
+        reader.readAsDataURL(file);
     };
 
-    // Remove logo handler
     const handleRemoveLogo = async () => {
         try {
             const userDocRef = doc(db, `userSettings/${userId}`);
@@ -96,39 +91,34 @@ const Settings = () => {
     };
 
     return (
-        <div className=' w-full pt-4 bg-gradient-to-r from-[#aeff00] to-[#1e9546] flex justify-center items-center overflow-auto'>
-            <div className='overflow-auto w-full mx-auto max-w-[700px] bg-white rounded-3xl shadow-xl'>
+        <div className="bg-white relative min-h-screen flex justify-center items-center p-4 " >
+            <div className="bg-grey-700 shadow-xl rounded-lg p-8 w-full max-w-4xl flex flex-col border-2 ">
                 {/* Navigation */}
-                <div className='flex justify-between items-center mb-4 pl-10 pt-10'>
-                        <Link to="/admin">
-                            <button className="text-[#000] bg-[#ffffff] px-6 py-2 rounded-lg font-semibold shadow-md hover:bg-gray-100 transition">
-                                Back to Admin
-                            </button>
-                        </Link>
-                    </div>
-                <div className='w-full flex flex-col  gap-2 py-5 items-center justify-center'>
+                <div className=" absolute top-5 left-5 flex justify-between items-center mb-6">
+                    <Link to="/admin">
+                        <button className="text-black bg-gray-200 px-4 py-2 rounded-md font-semibold shadow hover:bg-gray-300 transition">Back to Admin</button>
+                    </Link>
+                </div>
+
+                <div className="space-y-10">
                     {/* Logo Upload Section */}
-                    <div className='mb-6'>
-                        <h2 className='text-3xl font-semibold mb-4 text-center'>Logo</h2>
-                        <div className='flex items-center space-x-4'>
-                            <div className='w-24 h-24 border rounded-lg overflow-hidden'>
-                                <img 
-                                    src={logoPreview || defaultLogo} 
-                                    alt="Logo Preview" 
-                                    className='w-full h-full object-contain'
-                                />
+                    <div className="text-center">
+                        <h2 className="text-2xl font-bold mb-4">Logo</h2>
+                        <div className="flex justify-center items-center space-x-6">
+                            <div className="w-32 h-32 border rounded-lg overflow-hidden">
+                                <img src={logoPreview || defaultLogo} alt="Logo Preview" className="w-full h-full object-contain" />
                             </div>
-                            <div className='flex flex-col space-y-2'>
+                            <div className="flex flex-col items-center space-y-2">
                                 <input 
                                     type="file" 
                                     accept="image/*"
                                     onChange={handleLogoUpload}
-                                    className='w-full text-sm' 
+                                    className="block w-full text-sm" 
                                 />
                                 {logoPreview && (
                                     <button 
                                         onClick={handleRemoveLogo}
-                                        className='text-red-500 text-sm hover:underline'
+                                        className="text-red-500 text-sm hover:underline"
                                     >
                                         Remove Logo
                                     </button>
@@ -137,54 +127,65 @@ const Settings = () => {
                         </div>
                     </div>
 
+                    {/* Color Settings Section */}
                     <div>
-                        {/* Color Settings Section */}
-                    <h2 className='text-3xl font-semibold mb-5 text-center'>Color Customization</h2>
-                    <div className='grid grid-cols-2 gap-10'>
-                        {/* Header Color */}
-                        <div>
-                            <label className='block font-medium mb-2'>Header Background Color</label>
-                            <input 
-                                type="color" 
-                                value={headerColor} 
-                                onChange={handleHeaderColorChange}
-                                className='w-16 h-10 cursor-pointer' 
-                            />
-                        </div>
+                        <h2 className="text-2xl font-bold mb-6 text-center">Color Customization</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {/* Header Color */}
+                            <div>
+                                <label className="block font-medium mb-2">Header Background Color</label>
+                                <input 
+                                    type="color" 
+                                    value={headerColor} 
+                                    onChange={handleHeaderColorChange}
+                                    className="w-16 h-10 cursor-pointer border rounded-md" 
+                                />
+                            </div>
 
-                        {/* Single Scroll Background Color */}
-                        <div>
-                            <label className='block font-medium mb-2'>Single Scroll Background Color</label>
-                            <input 
-                                type="color" 
-                                value={singleScrollColor} 
-                                onChange={handleSingleScrollColorChange}
-                                className='w-16 h-10 cursor-pointer' 
-                            />
-                        </div>
+                            {/* Single Scroll Background Color */}
+                            <div>
+                                <label className="block font-medium mb-2">Single Scroll Background Color</label>
+                                <input 
+                                    type="color" 
+                                    value={singleScrollColor} 
+                                    onChange={handleSingleScrollColorChange}
+                                    className="w-16 h-10 cursor-pointer border rounded-md" 
+                                />
+                            </div>
 
-                        {/* Product Scroll Background Color */}
-                        <div>
-                            <label className='block font-medium mb-2'>Product Scroll Background Color</label>
-                            <input 
-                                type="color" 
-                                value={productScrollColor} 
-                                onChange={handleProductScrollColorChange}
-                                className='w-16 h-10 cursor-pointer' 
-                            />
-                        </div>
+                            {/* Product Scroll Background Color */}
+                            <div>
+                                <label className="block font-medium mb-2">Product Scroll Background Color</label>
+                                <input 
+                                    type="color" 
+                                    value={productScrollColor} 
+                                    onChange={handleProductScrollColorChange}
+                                    className="w-16 h-10 cursor-pointer border rounded-md" 
+                                />
+                            </div>
 
-                        {/* Font Color */}
-                        <div>
-                            <label className='block font-medium mb-2'>Font Color</label>
-                            <input 
-                                type="color" 
-                                value={fontColor} 
-                                onChange={handleFontColorChange}
-                                className='w-16 h-10 cursor-pointer' 
-                            />
+                            {/* Font Color */}
+                            <div>
+                                <label className="block font-medium mb-2">Font Color</label>
+                                <input 
+                                    type="color" 
+                                    value={fontColor} 
+                                    onChange={handleFontColorChange}
+                                    className="w-16 h-10 cursor-pointer border rounded-md" 
+                                />
+                            </div>
+
+                            {/* Price Background Color */}
+                            <div>
+                                <label className="block font-medium mb-2">Price Background Color</label>
+                                <input 
+                                    type="color" 
+                                    value={priceBackgroundColor} 
+                                    onChange={handlePriceBackroundColorChange}
+                                    className="w-16 h-10 cursor-pointer border rounded-md" 
+                                />
+                            </div>
                         </div>
-                    </div>
                     </div>
                 </div>
             </div>

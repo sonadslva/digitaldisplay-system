@@ -49,7 +49,7 @@ const GroceryTable = () => {
         return result;
     };
 
-    const paginatedItems = chunkArray(items, 18);
+    const paginatedItems = chunkArray(items, 14);
 
     // Update the visible items every 10 seconds
     useEffect(() => {

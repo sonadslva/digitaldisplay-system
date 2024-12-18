@@ -3,12 +3,34 @@ import { ref, onValue } from 'firebase/database';
 import { rtDatabase } from './Firebase';
 import { FaRupeeSign } from "react-icons/fa";
 import { getAuth } from 'firebase/auth';
-
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "./Firebase";
 const SingleProductSlider = () => {
     const [products, setProducts] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const scrollContainerRef = useRef(null);
     const [userId, setUserId] = useState(null);
+    const [fontColor, setFontColor] = useState("white");
+    const [priceBgColor, setPriceBgColor] = useState("rgb(39, 125, 43)");
+    useEffect(() => {
+        if (!userId) return;
+
+        const fetchUserSettings = async () => {
+            const userDocRef = doc(db, `userSettings/${userId}`);
+            try {
+                const snapshot = await getDoc(userDocRef);
+                if (snapshot.exists()) {
+                    const data = snapshot.data();
+                    setFontColor(data.fontColor || "black");
+                    setPriceBgColor(data.priceBackgroundColor || "white");
+                }
+            } catch (error) {
+                console.error("Error fetching user settings:", error);
+            }
+        };
+
+        fetchUserSettings();
+    }, [userId]);
 
     useEffect(() => {
         const auth = getAuth();
@@ -65,7 +87,7 @@ const SingleProductSlider = () => {
     }
 
     return (
-        <div className="w-full h-full">
+        <div className="w-full h-full" >
             <div className="w-full flex justify-center items-center h-full">
                 <div className="w-[90%] bg-[#fefefe] h-[300px] rounded-3xl lg:h-full BoxShadow py-3 overflow-hidden relative">
                     <div ref={scrollContainerRef} className="flex w-full h-full transition-transform duration-700">
@@ -84,9 +106,9 @@ const SingleProductSlider = () => {
                                     </div>
 
                                     {/* Price Section */}
-                                    <div className="w-full text-center flex justify-center items-center bg-[#68b244] rounded-3xl text-[#fff] lg:text-[60px] text-3xl PriceFontIcon lg:py-4">
+                                    <div  style={{ backgroundColor: priceBgColor,color:fontColor }} className="w-full text-center flex justify-center items-center bg-[#68b244] rounded-3xl text-[#fff] lg:text-[60px] text-3xl PriceFontIcon lg:py-4 ">
                                         <FaRupeeSign />
-                                        <span className="ml-1 lg:text-[70px] font-bold PriceFont">{product.price}.0</span>
+                                        <span  className="ml-1 lg:text-[70px] font-bold PriceFont">{product.price}.0</span>
                                     </div>
                                 </div>
                             </div>

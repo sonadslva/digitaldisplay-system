@@ -15,7 +15,7 @@ html{
 body{
     /* background: rgba(132, 255, 0, 0.89);
      */
-     background: linear-gradient(0deg, #aeff00 0%, rgb(5, 134, 0) 100%);
+     /* background: linear-gradient(0deg, #aeff00 0%, rgb(5, 134, 0) 100%); */
      background-repeat: no-repeat;
      background-size: cover;
      /* height: 100dvh; */
@@ -89,13 +89,14 @@ table{
     background-color: #e7e5e5;
   }
   .BgBackground{
-    background: radial-gradient(circle, rgba(30,149,70,1) 0%, rgba(71,130,71,) 38%, rgba(22,181,150,1) 100%);
+    /* background: radial-gradient(circle, rgba(30,149,70,1) 0%, rgba(71,130,71,) 38%, rgba(22,181,150,1) 100%); */
     /* height: 100%; */
   }
   /* #d35246 price color*/ 
   /* Container for the scroller */
   .product-scroller {
     width: 100%;
+    height: 100%;
     overflow: hidden;
     position: relative;
     white-space: nowrap;
@@ -232,7 +233,7 @@ table{
   box-shadow: rgba(50, 50, 93, 0.25) 0px 2px 5px -1px, rgba(0, 0, 0, 0.3) 0px 1px 3px -1px;
 }
 .bgBackground{
-  background: radial-gradient(circle, #1e9546 0%, #478247 38%, #16b596 100%);;
+  /* background: radial-gradient(circle, #1e9546 0%, #478247 38%, #16b596 100%);; */
 }
 @media screen and (min-width:1700px){
   .PriceFont{

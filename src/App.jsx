@@ -40,7 +40,7 @@ function App() {
         <Route path='/Settings' element={<Settings/>}></Route>
       </Routes>
       <div>
-        {showHome && <Login />}
+        {/* {showHome && <Login />} */}
         <BackgroundVideo onShowHome={setShowHome} />
       </div>
     </Router>

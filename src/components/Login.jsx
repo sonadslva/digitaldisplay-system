@@ -13,11 +13,11 @@ const Login = () => {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
-            // Check if the logged-in user is the Superadmin
+            
             if (user.uid === '43QZgDQCY2OjJehFPyoldb8LnHo1') {
                 navigate('/Superadmin');
             } else {
-                navigate('/Home'); // Default page for other users
+                navigate('/Home'); 
             }
         } catch (error) {
             setError('Invalid email or password');
@@ -25,39 +25,42 @@ const Login = () => {
     };
 
     return (
-        <div className='relative z-[998]'>
-            <div className='flex justify-center items-center h-screen w-full px-2'>
-                <div className='w-full max-w-[600px] h-[400px] bg-[#fff] BgBackground rounded-3xl px-2 py-10 flex flex-col justify-center items-center'>
-                    <div className='text-center font-bold text-3xl text-[#fff] mb-10'>Login</div>
-                    <div className='w-full flex flex-col justify-center items-center gap-5 mb-10'>
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            className='outline-none border-none rounded-md py-2 px-2 w-full'
-                            placeholder='User Name'
-                            required
-                        />
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className='outline-none border-none rounded-md py-2 px-2 w-full'
-                            placeholder='Password'
-                            required
-                        />
-                    </div>
-                    <div className='flex justify-center gap-5'>
-                       
-                        <button
-                            className='px-8 py-2 rounded-md bg-[#fff] font-semibold text-[#54a405]'
-                            onClick={handleLogin}
-                        >
-                            Login
-                        </button>
-                    </div>
-                    {error && <p className='text-red-500 mt-4'>{error}</p>}
+        <div className="relative z-[998] min-h-screen bg-grey-900 flex items-center justify-center">
+            <div className="w-full max-w-[400px] bg-white shadow-md rounded-lg p-6 border-2">
+                {/* Header */}
+                <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Login</h2>
+
+                {/* Input Fields */}
+                <div className="space-y-4">
+                    <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-green-300 outline-none"
+                        placeholder="Email Address"
+                        required
+                    />
+                    <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring focus:ring-green-300 outline-none"
+                        placeholder="Password"
+                        required
+                    />
                 </div>
+
+                {/* Login Button */}
+                <div className="mt-6">
+                    <button
+                        onClick={handleLogin}
+                        className="w-full bg-green-500 text-white py-2 rounded-lg hover:bg-green-600 transition duration-300"
+                    >
+                        Login
+                    </button>
+                </div>
+
+              
             </div>
         </div>
     );
