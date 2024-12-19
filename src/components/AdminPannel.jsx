@@ -273,7 +273,7 @@ const uploadExcelData = async () => {
         alert("Data uploaded successfully!");
         setExcelData([]); // Clear the excelData after successful upload
     } catch (error) {
-        console.error("Error uploading data:", error);
+        // console.error("Error uploading data:", error);
         // alert("Error uploading data. Please try again."); // Show error message
     } finally {
         setIsUploading(false); // Hide loading indicator or re-enable upload button
