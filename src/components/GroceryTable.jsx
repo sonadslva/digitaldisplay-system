@@ -75,8 +75,8 @@ const GroceryTable = () => {
     const rows = chunkRows(visibleItems, 2);
 
     return (
-        <div className="bg-[#a4d38f]">
-            <div className="text-3xl text-center mb-3 font-bold text-[#fff]">Price List</div>
+        <div className="bg-[#f4f9ba]">
+            <div className="text-3xl text-center mb-3 font-bold text-[#000]">Price List</div>
 
             <div className="w-full overflow-x-auto">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-5">

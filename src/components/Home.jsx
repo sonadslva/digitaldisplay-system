@@ -12,11 +12,11 @@ import { MdAddBox } from 'react-icons/md';
 
 const Home = () => {
   const navigate = useNavigate();
-  const [headerColor, setHeaderColor] = useState("rgb(23, 92, 27)");
-  const [singleScrollColor, setSingleScrollColor] = useState("rgb(33, 129, 38)");
+  const [headerColor, setHeaderColor] = useState("#175c1b");
+  const [singleScrollColor, setSingleScrollColor] = useState("#218126");
   const [logo, setLogo] = useState(logoPlaceholder);
   const [userId, setUserId] = useState(null);
-  const [productScrollColor,setProductScrollColor]=useState("rgb(95, 191, 100)")
+  const [productScrollColor,setProductScrollColor]=useState("#5fbf64")
 
   const handleLogout = async () => {
     try {
@@ -41,10 +41,10 @@ const Home = () => {
 
         if (snapshot.exists()) {
           const data = snapshot.data();
-          setHeaderColor(data.headerColor || "rgb(8, 90, 12)");
+          setHeaderColor(data.headerColor || "#085a0c");
           setLogo(data.logoBase64 || logoPlaceholder);
-          setSingleScrollColor(data.singleScrollColor || "rgb(33, 129, 38)");
-          setProductScrollColor(data.productScrollColor || "rgb(95, 191, 100)")
+          setSingleScrollColor(data.singleScrollColor || "#218126");
+          setProductScrollColor(data.productScrollColor || "#5fbf64")
         }
       } catch (error) {
         console.error("Error fetching user settings:", error);
@@ -85,7 +85,7 @@ const Home = () => {
         </section>
 
         {/* Grocery Table */}
-        <section className="hidden lg:flex lg:w-[50%] h-full">
+        <section className="hidden lg:flex lg:w-[50%] h-full ">
           <div className="w-full">
             <GroceryTable />
           </div>

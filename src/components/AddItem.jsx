@@ -92,7 +92,7 @@ const AddItem = () => {
     };
 
     return (
-        <div className='h-screen w-full pt-4 fixed z-[999] bg-gradient-to-r from-[#aeff00] to-[#1e9546] flex justify-center items-center'>
+        <div className='h-screen w-full pt-4 fixed z-[999]  flex justify-center items-center'>
             <div className='h-auto max-w-[700px] bg-[#232323] w-full rounded-3xl'>
                 <div className='w-full flex flex-col gap-5 py-10 px-4'>
                     <div className='mb-3 font-bold text-[#fff] text-3xl text-center'>Add Item</div>

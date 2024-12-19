@@ -96,7 +96,7 @@ const Settings = () => {
                 {/* Navigation */}
                 <div className=" absolute top-5 left-5 flex justify-between items-center mb-6">
                     <Link to="/admin">
-                        <button className="text-black bg-gray-200 px-4 py-2 rounded-md font-semibold shadow hover:bg-gray-300 transition">Back to Admin</button>
+                        <button className="text-black bg-gray-200 px-4 py-2 rounded-md font-semibold shadow hover:bg-gray-300 transition">Back </button>
                     </Link>
                 </div>
 
