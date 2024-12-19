@@ -25,8 +25,8 @@ import { IoIosAdd } from "react-icons/io";
 import { IoMdSettings } from "react-icons/io";
 import {  getDoc } from 'firebase/firestore';
 import logoPlaceholder from '../assets/logo.png';
-
-
+import { SiTicktick } from "react-icons/si";
+import { RxCross2 } from "react-icons/rx";
 
 const AdminPannel = () => {
   const [items, setItems] = useState([]);
@@ -191,10 +191,12 @@ const AdminPannel = () => {
           
           if (parsedData.length === 0) {
               alert("No data in the Excel file.");
+              e.target.value=" ";
               return;
           }
   
-          setExcelData(parsedData); 
+          setExcelData(parsedData);
+          e.target.value=" "; 
       };
       reader.readAsArrayBuffer(file);
     
@@ -268,14 +270,20 @@ const AdminPannel = () => {
         setIsUploading(false);
       }
     };
-
+    const handleCancel = () => {
+      setExcelData([]); // Clear uploaded data
+      setFileInputKey(Date.now()); // Reset file input by changing its key
+      setIsUploading(false); // Stop uploading process
+      setIsUploading1(false); // Reset any "loading" flags
+  };
+  
     //image add
       
     const [imagePreview, setImagePreview] = useState(null);
     const [base64Image, setBase64Image] = useState(null);
     const [isUploading2, setIsUploading2] = useState(false);
     const [currentItemId, setCurrentItemId] = useState(null);
-  
+    const [fileInputKey, setFileInputKey] = useState(Date.now());
     const handleImageButtonClick = (id) => {
       setCurrentItemId(id); // Set the current item ID
       document.getElementById(`img-input-${id}`).click(); // Trigger specific file input
@@ -406,13 +414,14 @@ const AdminPannel = () => {
                   <button className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300 " onClick={() => document.getElementById('file-input').click()}>Import <PiMicrosoftExcelLogoBold /></button>
                   <input
                     id="file-input"
+                    key={fileInputKey}
                     type="file"
                     accept=".xlsx, .xls"
                     style={{ display: 'none' }} // Hide the input element
                     onChange={handleFileUpload}
                     />
                 </div>
-                <div>
+                <>
                     {excelData.length > 0 && !isUploading && (  // Only show button if there's data and not uploading
                       <div>
                         <button
@@ -420,11 +429,15 @@ const AdminPannel = () => {
                           onClick={uploadExcelData}
                           disabled={isUploading || excelData.length === 0}
                         >
-                          {isUploading ? "Uploading..." : "Upload Data"}
+                          {isUploading ? "Uploading..." :<SiTicktick />}
                         </button>
+                        <button className="flex justify-center items-center gap-2 text-[#000] bg-red-500 px-8 py-2 rounded-lg font-semibold border-2 " onClick={handleCancel} disabled={isUploading}>
+                        <RxCross2 />
+                        </button>
+
                       </div>
                     )}
-                  </div>
+                  </>
 
                 <div className="relative flex justify-center items-center border-2  rounded-lg">
                   <input
