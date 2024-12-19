@@ -120,11 +120,14 @@ const AdminPannel = () => {
   };
 
   const handleEdit = (id, field, value) => {
+    console.log(`Updating ${field} for ${id}: ${value}`); // Debugging
     setEditedItems(prev => ({
       ...prev,
       [id]: { ...prev[id], [field]: value }
     }));
   };
+
+
 
   const handleSaveEdits = async () => {
     try {
@@ -553,11 +556,13 @@ const uploadExcelData = async () => {
                     <td className="p-2 text-center">
                       {isEditMode ? (
                         <input
-                          type="text"
-                          value={editedItems[item.id]?.name ?? item.name}
-                          onChange={(e) => handleEdit(item.id, 'name', e.target.value)}
-                          className="px-2 py-1 border rounded"
-                        />
+                        type="text"
+                        value={editedItems[item.id]?.name ?? item.name}
+                        onChange={(e) => handleEdit(item.id, 'name', e.target.value.toUpperCase())}
+                        className="px-2 py-1 border rounded"
+                      />
+                      
+                   
                       ) : (
                         item.name
                       )}
