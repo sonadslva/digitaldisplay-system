@@ -21,6 +21,7 @@ const Login = () => {
             }
         } catch (error) {
             setError('Invalid email or password');
+          
         }
     };
 
@@ -49,7 +50,11 @@ const Login = () => {
                         required
                     />
                 </div>
-
+                {error && (
+                    <div className="text-red-500 text-center mb-4">
+                        {error}
+                    </div>
+                )}
                 {/* Login Button */}
                 <div className="mt-6">
                     <button

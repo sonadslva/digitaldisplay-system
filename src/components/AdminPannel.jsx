@@ -176,100 +176,107 @@ const AdminPannel = () => {
     }
   };
  
-    const handleFileUpload = async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-  
-      const reader = new FileReader();
-      reader.onload = (event) => {
-          const data = new Uint8Array(event.target.result);
-          const workbook = XLSX.read(data, { type: "array" });
-          const sheetName = workbook.SheetNames[0];
-          const sheet = workbook.Sheets[sheetName];
-          const parsedData = XLSX.utils.sheet_to_json(sheet); // Parse to JSON
-  
-          
-          if (parsedData.length === 0) {
-              alert("No data in the Excel file.");
-              e.target.value=" ";
-              return;
-          }
-  
-          setExcelData(parsedData);
-          e.target.value=" "; 
-      };
-      reader.readAsArrayBuffer(file);
-    
-  
-      
-      setIsUploading1(true);
-      // alert("click upload to add data!")
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        const data = new Uint8Array(event.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const parsedData = XLSX.utils.sheet_to_json(sheet); // Parse to JSON
+
+        if (parsedData.length === 0) {
+            alert("No data in the Excel file.");
+            e.target.value = ""; // Clear the input after processing
+            return;
+        }
+
+        // Normalize keys to handle case-insensitive headings
+        const normalizedData = parsedData.map(row => {
+            const normalizedRow = {};
+            Object.keys(row).forEach(key => {
+                normalizedRow[key.toLowerCase()] = row[key]; // Convert all keys to lowercase
+            });
+            return normalizedRow;
+        });
+
+        setExcelData(normalizedData);
+        e.target.value = ""; // Clear the input after processing
     };
-    const uploadExcelData = async () => {
-      setIsUploading(true);
-    
-      try {
+    reader.readAsArrayBuffer(file);
+
+    setIsUploading1(true); // This flag might be for showing loading spinner in the UI
+    // alert("Click upload to add data!");
+};
+
+const uploadExcelData = async () => {
+    setIsUploading(true); // Show loading indicator or disable upload button
+
+    try {
         const firestorePromises = [];
         const realtimeDbPromises = [];
-    
+
         excelData.forEach((row) => {
-          // Find the existing item by name
-          const formattedItemName = row.name ? row.name.toUpperCase() : "UNNAMED";
-          const existingItem = items.find(item => item.name === formattedItemName);
-    
-          if (existingItem) {
-            const updatedItemData = {
-              
-              price: row.price || 0,
-              updatedAt: new Date().toISOString(),
-            };
-    
-            // Update data in Firestore
-            const itemDocRef = doc(db, 'items', existingItem.id); // Assuming `existingItem.id` is the Firestore document ID
-            firestorePromises.push(updateDoc(itemDocRef, updatedItemData));
-    
-            // Update data in Realtime Database
-            const itemRef = ref(rtDatabase, 'items/' + existingItem.id); // Assuming `existingItem.id` is the key in Realtime DB
-            realtimeDbPromises.push(update(itemRef, updatedItemData));
-          } else {
-            // If the item doesn't exist, create a new item
-            const newItemData = {
-              name: formattedItemName,
-              nativeName:row.nativename||"",
-              price: row.price || 0,
-              image: '',
-              status: "active",
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              userId: auth.currentUser.uid,
-              displayPreferences: {
-                showInItemList: false,
-                showInListScroll: false,
-                showInSingleScroll: false
-              }
-            };
-    
-            // Add the new item to Firestore
-            firestorePromises.push(addDoc(collection(db, 'items'), newItemData));
-    
-            // Add the new item to Realtime Database
-            const newItemRef = push(ref(rtDatabase, 'items'));
-            realtimeDbPromises.push(set(newItemRef, newItemData));
-          }
+            // Use lowercase keys here since we normalized them in the previous step
+            const formattedItemName = row.name ? row.name.toUpperCase() : "UNNAMED";
+            const existingItem = items.find(item => item.name === formattedItemName);
+
+            if (existingItem) {
+                const updatedItemData = {
+                    price: row.price || 0,
+                    updatedAt: new Date().toISOString(),
+                };
+
+                // Update Firestore
+                const itemDocRef = doc(db, 'items', existingItem.id);
+                firestorePromises.push(updateDoc(itemDocRef, updatedItemData));
+
+                // Update Realtime Database
+                const itemRef = ref(rtDatabase, 'items/' + existingItem.id);
+                realtimeDbPromises.push(update(itemRef, updatedItemData));
+            } else {
+                // Create new item if it doesn't exist
+                const newItemData = {
+                    name: formattedItemName,
+                    nativeName: row.nativename || "",
+                    price: row.price || 0,
+                    image: '',
+                    status: "active",
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    userId: auth.currentUser.uid,
+                    displayPreferences: {
+                        showInItemList: false,
+                        showInListScroll: false,
+                        showInSingleScroll: false
+                    }
+                };
+
+                // Add new item to Firestore
+                firestorePromises.push(addDoc(collection(db, 'items'), newItemData));
+
+                // Add new item to Realtime Database
+                const newItemRef = push(ref(rtDatabase, 'items'));
+                realtimeDbPromises.push(set(newItemRef, newItemData));
+            }
         });
-    
+
         // Wait for both Firestore and Realtime Database uploads to complete
         await Promise.all([...firestorePromises, ...realtimeDbPromises]);
-    
+
         alert("Data uploaded successfully!");
         setExcelData([]); // Clear the excelData after successful upload
-      } catch (error) {
+    } catch (error) {
         console.error("Error uploading data:", error);
-        // alert("Error uploading data. Please try again.");
-      } finally {
-        setIsUploading(false);
-      }
-    };
+        alert("Error uploading data. Please try again."); // Show error message
+    } finally {
+        setIsUploading(false); // Hide loading indicator or re-enable upload button
+    }
+};
+
     const handleCancel = () => {
       setExcelData([]); // Clear uploaded data
       setFileInputKey(Date.now()); // Reset file input by changing its key
@@ -560,7 +567,7 @@ const AdminPannel = () => {
                         <input
                           type="text"
                           value={editedItems[item.id]?.nativeName ?? item.nativeName}
-                          onChange={(e) => handleEdit(item.id, 'name', e.target.value)}
+                          onChange={(e) => handleEdit(item.id, 'nativeName', e.target.value)}
                           className="px-2 py-1 border rounded"
                         />
                       ) : (

@@ -133,47 +133,51 @@ const Superadmin = () => {
   };
   
   return (
-    <div className="BgBackground h-screen overflow-auto relative z-[999]">
+    <div className=" h-screen overflow-auto relative z-[999] bg-[#dddada]">
       <section>
-        <div className="w-full px-2 py-3 mb-5 NavbarBg">
-          <div className="flex justify-between font-bold px-6 items-center text-3xl">
-            <div className="w-[100px] md:w-[130px] h-auto">
-              <img src={logo} className="w-full h-full object-contain drop-shadow-md" alt="" />
-            </div>
-            <button className="text-lg lg:text-xl font-rrbold" onClick={handleLogout}><FaUserAltSlash /></button>
-          </div>
-        </div>
+      <div className="w-full px-4 py-3 mb-5 bg-[#343A40] shadow-md">
+      <div className="flex justify-between items-center">
+        <h1 className="text-white text-2xl font-bold">Super Admin Panel</h1>
+        <button
+          className="text-white bg-red-500 p-2 rounded-full hover:bg-red-600 transition"
+          onClick={handleLogout}
+        >
+          <FaUserAltSlash size={20} />
+        </button>
+      </div>
+    </div>
 
-        <div className="mb-5 w-full flex items-center justify-center ">
-          <div className="grid grid-cols-1 md:flex justify-center items-center gap-3 px-3">
-            <Link to="/Adduser">
-              <div className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold">
-                Add User 
-                <IoPersonAddSharp />
-              </div>
-            </Link>
-          </div>
-          <div className="flex justify-center items-center gap-3 mb-5 lg:mb-0">
+    <div className="mb-5 w-full flex flex-col md:flex-row items-center justify-center gap-4">
+      <Link to="/Adduser">
+        <div className="flex justify-center items-center gap-2 text-[#000] bg-white px-8 py-3 rounded-lg font-semibold shadow-md hover:shadow-lg transition">
+          Add User
+          <IoPersonAddSharp />
+        </div>
+      </Link>
+      <div className="flex justify-center items-center gap-3">
+        <button
+          onClick={handleDeleteUsers}
+          className={`flex justify-center items-center gap-2 text-white px-8 py-3 rounded-lg font-semibold ${
+            isSelectionMode
+              ? "bg-red-500 hover:bg-red-600"
+              : "bg-green-500 hover:bg-green-600"
+          } transition`}
+        >
+          {isSelectionMode ? "Confirm Delete" : "Delete"} <MdDelete />
+        </button>
+        {isSelectionMode && (
           <button
-              onClick={handleDeleteUsers}
-              className="flex justify-center items-center gap-2 text-[#000] bg-green-500 px-8 py-2 rounded-lg font-semibold"
-            >
-              {isSelectionMode ? "Confirm Delete" : "Delete"} <MdDelete />
-            </button>
-                    {isSelectionMode && (
-            <button
-              onClick={() => {
-                setSelectedUsers([]); // Clear selected users
-                setIsSelectionMode(false); // Exit selection mode
-              }}
-              className="flex justify-center items-center gap-2 text-[#000] bg-red-500 px-8 py-2 rounded-lg font-semibold"
-            >
-              Cancel <MdCancel />
-            </button>
-          )}
-          </div>
-        </div>
-
+            onClick={() => {
+              setSelectedUsers([]);
+              setIsSelectionMode(false);
+            }}
+            className="flex justify-center items-center gap-2 text-white bg-gray-500 px-8 py-3 rounded-lg font-semibold hover:bg-gray-600 transition"
+          >
+            Cancel <MdCancel />
+          </button>
+        )}
+      </div>
+    </div>
         {/* Users Table */}
         <div className="w-full lg:px-5 overflow-x-auto">
           <table className="rounded-t-xl font-semibold text-[#000] w-full border-collapse border border-gray-300">
