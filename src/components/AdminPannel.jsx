@@ -345,7 +345,7 @@ const uploadExcelData = async () => {
     setCurrentItemId(null);
       } catch (error) {
         console.error("Error updating item:", error);
-        alert("Error updating item. Please try again.");
+        // alert("Error updating item. Please try again.");
       }
      
     };
