@@ -95,7 +95,7 @@ const SingleProductSlider = () => {
                             <div key={index} className="w-full h-full flex-shrink-0 flex flex-col justify-between overflow-hidden">
                                 <div className="flex flex-col items-center justify-center h-full">
                                     {/* Image Section */}
-                                    <div className="w-[75%] h-[55%] flex justify-center items-center mb-4">
+                                    <div className="w-[73%] h-[53%] flex justify-center items-center mb-4">
                                         <img src={product.img} className="w-full h-full object-contain" alt={product.name} />
                                     </div>
 
