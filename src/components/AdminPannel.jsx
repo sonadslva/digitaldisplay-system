@@ -207,16 +207,16 @@ const AdminPannel = () => {
         });
 
         setExcelData(normalizedData);
-        e.target.value = ""; // Clear the input after processing
+        e.target.value = "";
     };
     reader.readAsArrayBuffer(file);
 
-    setIsUploading1(true); // This flag might be for showing loading spinner in the UI
+    setIsUploading1(true); 
     // alert("Click upload to add data!");
 };
 
 const uploadExcelData = async () => {
-    setIsUploading(true); // Show loading indicator or disable upload button
+    setIsUploading(true); 
 
     try {
         const firestorePromises = [];
@@ -271,20 +271,25 @@ const uploadExcelData = async () => {
         await Promise.all([...firestorePromises, ...realtimeDbPromises]);
 
         alert("Data uploaded successfully!");
-        setExcelData([]); // Clear the excelData after successful upload
+        setExcelData([]); 
     } catch (error) {
         // console.error("Error uploading data:", error);
-        // alert("Error uploading data. Please try again."); // Show error message
+        // alert("Error uploading data. Please try again."); 
     } finally {
-        setIsUploading(false); // Hide loading indicator or re-enable upload button
+        // setIsUploading(false);
+        setExcelData([]); 
+        setFileInputKey(Date.now()); 
+        setIsUploading(false); 
+        setIsUploading1(false); 
+         
     }
 };
 
     const handleCancel = () => {
-      setExcelData([]); // Clear uploaded data
-      setFileInputKey(Date.now()); // Reset file input by changing its key
-      setIsUploading(false); // Stop uploading process
-      setIsUploading1(false); // Reset any "loading" flags
+      setExcelData([]); 
+      setFileInputKey(Date.now()); 
+      setIsUploading(false); 
+      setIsUploading1(false); 
   };
   
     //image add
@@ -302,7 +307,7 @@ const uploadExcelData = async () => {
     const imageUpdate = (e) => {
       const file = e.target.files[0];
       if (file) {
-        if (file.size > 500000) { // 500KB limit
+        if (file.size > 500000) { 
           alert("Image size should be less than 500KB");
           return;
         }
@@ -311,12 +316,12 @@ const uploadExcelData = async () => {
   
         const reader = new FileReader();
         reader.onloadend = () => {
-          const base64String = reader.result; // Convert file to Base64 string
+          const base64String = reader.result; 
           setBase64Image(base64String);
           setImagePreview(base64String);
           setIsUploading2(false);
         };
-        reader.readAsDataURL(file); // Start reading the file
+        reader.readAsDataURL(file); 
       }
     };
   
@@ -328,16 +333,16 @@ const uploadExcelData = async () => {
     
       try {
         const itemData = {
-          image: base64Image, // Store Base64 string
+          image: base64Image,
         };
     
-       // First, check if the item exists in Firestore
+       
     const firestoreRef = doc(db, "items", currentItemId);
     
-    // Use setDoc with merge option to create or update the document
+    
     await setDoc(firestoreRef, itemData, { merge: true });
 
-    // Update Realtime Database
+    
     const realtimeRef = ref(rtDatabase, `items/${currentItemId}`);
     await update(realtimeRef, itemData);
 
@@ -357,8 +362,8 @@ const uploadExcelData = async () => {
       
        useEffect(() => {
           const fetchHeaderData = async () => {
-            const userId = auth.currentUser?.uid; // Get the current user ID
-            if (!userId) return; // Exit if no user is logged in
+            const userId = auth.currentUser?.uid; 
+            if (!userId) return; 
       
             try {
               const userDocRef = doc(db, `userSettings/${userId}`);
