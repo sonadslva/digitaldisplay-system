@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ref, onValue } from 'firebase/database';
-import { rtDatabase } from './Firebase';
+import { rtDatabase ,db} from './Firebase';
 import { HiCurrencyRupee } from "react-icons/hi2";
 import { getAuth } from 'firebase/auth';
-
+import { doc, getDoc } from "firebase/firestore";
 const ProductScroll = () => {
   const [products, setProducts] = useState([]);
   const [userId, setUserId] = useState(null);
@@ -37,10 +37,33 @@ const ProductScroll = () => {
     });
 
     return () => unsubscribe();
-  }, [userId]); // Re-run when `userId` changes.
+  }, [userId]); 
 
-  // Double the products array for seamless scrolling
+  
   const doubledProducts = [...products, ...products];
+
+ 
+  const [fontColor, setFontColor] = useState("white");
+  const [priceBgColor, setPriceBgColor] = useState("  #277d2b");
+  useEffect(() => {
+      if (!userId) return;
+
+      const fetchUserSettings = async () => {
+          const userDocRef = doc(db, `userSettings/${userId}`);
+          try {
+              const snapshot = await getDoc(userDocRef);
+              if (snapshot.exists()) {
+                  const data = snapshot.data();
+                  setFontColor(data.fontColor || "black");
+                  setPriceBgColor(data.priceBackgroundColor || " #277d2b");
+              }
+          } catch (error) {
+              console.error("Error fetching user settings:", error);
+          }
+      };
+
+      fetchUserSettings();
+  }, [userId]);
 
   return (
     <div  className="product-scroller overflow-hidden relative">
@@ -48,8 +71,8 @@ const ProductScroll = () => {
         className="product-slider flex transition-transform duration-[15s] ease-linear"
         ref={sliderRef}
         style={{
-          transform: `translateX(-${100 / doubledProducts.length}%)`, // Control the speed of scrolling dynamically
-          width: `${doubledProducts.length * 200}px`, // Dynamically set width based on doubled products
+          transform: `translateX(-${100 / doubledProducts.length}%)`, 
+          width: `${doubledProducts.length * 200}px`, 
         }}
       >
         {doubledProducts.map((product, index) => (
@@ -61,10 +84,10 @@ const ProductScroll = () => {
                 alt={product.name}
               />
             </div>
-            <div className="product-name absolute bottom-20 left-1/2 transform -translate-x-1/2 text-center font-bold text-lg text-black">
+            <div className=" absolute bottom-20 left-1/2 transform -translate-x-1/2 text-center font-bold text-lg text-black">
               {product.name}
             </div>
-            <div className="product-price flex w-full justify-center items-center bg-[#1d485f] absolute bottom-0 gap-1 text-xl lg:text-[45px] py-3 font-semibold text-[#fff]">
+            <div style={{ backgroundColor: priceBgColor,color:fontColor }} className=" flex w-full justify-center items-center bg-[#1d485f] absolute bottom-0 gap-1 text-xl lg:text-[45px] py-3 font-semibold text-[#fff]">
               <HiCurrencyRupee />
               {product.price}
             </div>

@@ -11,7 +11,7 @@ const SingleProductSlider = () => {
     const scrollContainerRef = useRef(null);
     const [userId, setUserId] = useState(null);
     const [fontColor, setFontColor] = useState("white");
-    const [priceBgColor, setPriceBgColor] = useState("rgb(39, 125, 43)");
+    const [priceBgColor, setPriceBgColor] = useState("#277d2b");
     useEffect(() => {
         if (!userId) return;
 
@@ -21,8 +21,8 @@ const SingleProductSlider = () => {
                 const snapshot = await getDoc(userDocRef);
                 if (snapshot.exists()) {
                     const data = snapshot.data();
-                    setFontColor(data.fontColor || "black");
-                    setPriceBgColor(data.priceBackgroundColor || "white");
+                    setFontColor(data.fontColor || "#ffffff");
+                    setPriceBgColor(data.priceBackgroundColor || "#277d2b");
                 }
             } catch (error) {
                 console.error("Error fetching user settings:", error);

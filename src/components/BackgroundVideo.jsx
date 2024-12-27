@@ -28,11 +28,10 @@ const BackgroundVideo = ({ onShowHome }) => {
     return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
   };
 
-  // Fetch the user ID and videos
+ 
   useEffect(() => {
-    // Set up a listener for authentication state
-    // if (isLoading || !userId || userEmail === 'superadmin@gmail.com') return;
-  
+    
+    if (isLoading || !userId) return;
     const unsubscribeAuth = auth.onAuthStateChanged((user) => {
       if (user) {
         setUserId(user.uid);
@@ -49,7 +48,7 @@ const BackgroundVideo = ({ onShowHome }) => {
   // Fetch videos from Firebase when user is authenticated
   useEffect(() => {
     if (isLoading || !userId) return; // Wait for user to be logged in
-
+    
     const userVideosRef = ref(rtDatabase, `users/${userId}/videos`);
     const unsubscribe = onValue(userVideosRef, (snapshot) => {
       const data = snapshot.val();
@@ -87,6 +86,7 @@ const BackgroundVideo = ({ onShowHome }) => {
 
   // Video rotation logic
   useEffect(() => {
+    
     if (videos.length === 0) {
       onShowHome(true);
       return;
@@ -130,6 +130,7 @@ const BackgroundVideo = ({ onShowHome }) => {
   if (videos.length === 0) return null;
 
   return (
+    
     <div className="fixed top-0 bottom-0 right-0 left-0 w-full h-screen z-[997]">
       {showVideo && videos[currentVideoIndex] && (
         <iframe

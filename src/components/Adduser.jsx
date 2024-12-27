@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from "react-router-dom";
-import { addDoc, collection } from 'firebase/firestore';
+import { addDoc, collection,setDoc,doc } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth, db } from './Firebase';
 import { v4 as uuidv4 } from 'uuid';
@@ -27,36 +27,40 @@ const Adduser = () => {
                 alert('Please fill in all fields');
                 return;
             }
-
+    
             // Create user in Firebase Authentication
             const userCredential = await createUserWithEmailAndPassword(auth, newUser.email, newUser.password);
             const user = userCredential.user;
-
+    
             // Generate unique admin ID
             const adminId = `ADMIN-${uuidv4()}`;
           
-            // Calculate validity (1 year from now)
+            // Calculate validity (1 day from now)
             const currentDate = new Date();
             const validityDate = new Date(currentDate);
-            validityDate.setFullYear(currentDate.getFullYear() + 1);
+            validityDate.setDate(currentDate.getDate() + 1); // Validity for 1 day
+            const timeDiff = validityDate.getTime() - currentDate.getTime();
+            const remainingDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); // Should result in 1 day
     
             const userToAdd = {
                 ...newUser,
                 adminId,
-                userId: user.uid, // Firebase Authentication UID
-                numberOfDays: 0,  // Initialize numberOfDays to 0
+                userId: user.uid,
+                remainingDays, 
                 validity: validityDate,
-                createdAt: Timestamp.now(), // Use Firestore Timestamp
+                createdAt: Timestamp.now(), 
+                status: 'active',
             };
     
-            await addDoc(collection(db, 'AdminUser'), userToAdd);
-
+            await setDoc(doc(db, 'AdminUser', user.uid), userToAdd);
+    
             navigate('/Superadmin');
         } catch (error) {
             console.error("Error adding user:", error);
             alert('Error adding user. Please try again.');
         }
     };
+    
 
     return (
         <div className='h-screen w-full pt-4 fixed z-[999] bg-[#ffffff] flex justify-center items-center'>

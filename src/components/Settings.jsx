@@ -6,12 +6,13 @@ import defaultLogo from "../assets/logo.png";
 import { db, auth } from "./Firebase";
 
 const Settings = () => {
-    const [headerColor, setHeaderColor] = useState("rgb(23, 92, 27)");
-    const [singleScrollColor, setSingleScrollColor] = useState("rgb(33, 129, 38)");
-    const [productScrollColor, setProductScrollColor] = useState("rgb(95, 191, 100)");
-    const [fontColor, setFontColor] = useState("rgb(255, 255, 255)");
-    const [priceBackgroundColor, setPriceBackgroundColor] = useState("rgb(39, 125, 43)");
+    const [headerColor, setHeaderColor] = useState("  #175c1b");
+    const [singleScrollColor, setSingleScrollColor] = useState("#5fbf64");
+    const [productScrollColor, setProductScrollColor] = useState("  #5fbf64");
+    const [fontColor, setFontColor] = useState("#ffffff");
+    const [priceBackgroundColor, setPriceBackgroundColor] = useState("  #277d2b");
     const [logoPreview, setLogoPreview] = useState(null);
+    const [priceListBackgroundColor,setPriceListBackgroundColor]=useState( " #d2ecd3")
 
     const userId = auth.currentUser?.uid;
 
@@ -24,12 +25,13 @@ const Settings = () => {
                 const snapshot = await getDoc(userDocRef);
                 if (snapshot.exists()) {
                     const data = snapshot.data();
-                    setHeaderColor(data.headerColor || "rgb(23, 92, 27)");
-                    setSingleScrollColor(data.singleScrollColor || "rgb(33, 129, 38)");
-                    setProductScrollColor(data.productScrollColor || "rgb(95, 191, 100)");
+                    setHeaderColor(data.headerColor || "  #175c1b");
+                    setSingleScrollColor(data.singleScrollColor || "#afd0b0");
+                    setProductScrollColor(data.productScrollColor || "  #5fbf64");
                     setFontColor(data.fontColor || "  #ffffff");
-                    setPriceBackgroundColor(data.priceBackgroundColor || "rgb(39, 125, 43)");
+                    setPriceBackgroundColor(data.priceBackgroundColor || "  #277d2b");
                     setLogoPreview(data.logoBase64 || null);
+                    setPriceListBackgroundColor(data.priceListBackgroundColor|| "  #d2ecd3");
                 }
             } catch (error) {
                 console.error("Error fetching settings:", error);
@@ -57,6 +59,7 @@ const Settings = () => {
     const handleProductScrollColorChange = (e) => saveColorSetting("productScrollColor", e.target.value, setProductScrollColor);
     const handleFontColorChange = (e) => saveColorSetting("fontColor", e.target.value, setFontColor);
     const handlePriceBackroundColorChange = (e) => saveColorSetting("priceBackgroundColor", e.target.value, setPriceBackgroundColor);
+    const handlePriceListBackroundColorChange = (e) => saveColorSetting("priceListBackgroundColor", e.target.value, setPriceListBackgroundColor);
 
     const handleLogoUpload = async (event) => {
         const file = event.target.files[0];
@@ -182,6 +185,15 @@ const Settings = () => {
                                     type="color" 
                                     value={priceBackgroundColor} 
                                     onChange={handlePriceBackroundColorChange}
+                                    className="w-16 h-10 cursor-pointer border rounded-md" 
+                                />
+                            </div>
+                            <div>
+                                <label className="block font-medium mb-2">Price List Background Color</label>
+                                <input 
+                                    type="color" 
+                                    value={priceListBackgroundColor} 
+                                    onChange={handlePriceListBackroundColorChange}
                                     className="w-16 h-10 cursor-pointer border rounded-md" 
                                 />
                             </div>

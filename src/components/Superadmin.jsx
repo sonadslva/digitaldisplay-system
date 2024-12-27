@@ -2,16 +2,13 @@ import React, { useState, useEffect } from "react";
 import { BsFillPlusSquareFill } from "react-icons/bs";
 import { MdModeEditOutline, MdDelete, MdSave, MdCancel } from "react-icons/md";
 import { Link } from "react-router-dom";
-import { collection, updateDoc, deleteDoc, doc, getDocs } from "firebase/firestore";
+import {  collection, updateDoc, deleteDoc, doc, getDocs, getDoc,Timestamp } from "firebase/firestore";
 import { db } from './Firebase';
-import logo from "../assets/logo.png";
 import { auth } from './Firebase';
 import { signOut } from 'firebase/auth';
-import { FaUserAltSlash } from "react-icons/fa";
+import { FaUserAltSlash, FaRegEdit } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
-import { FaRegEdit } from "react-icons/fa";
-import { IoPersonAdd } from "react-icons/io5";
-import { IoPersonAddSharp } from "react-icons/io5";
+import { IoPersonAdd, IoPersonAddSharp } from "react-icons/io5";
 const Superadmin = () => {
   const [users, setUsers] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
@@ -25,27 +22,37 @@ const Superadmin = () => {
     const fetchUsers = async () => {
       try {
         const querySnapshot = await getDocs(collection(db, 'AdminUser'));
-        const userList = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+        const userList = querySnapshot.docs.map(doc => {
+          const data = doc.data();
+          
+
+  
+          // Convert Firestore timestamps to Date objects or readable strings
+          return {
+            id: doc.id,
+            ...data,
+            validity: data.validity ? new Date(data.validity.seconds * 1000).toLocaleDateString() : 'N/A',
+            createdAt: data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString() : 'N/A',
+           
+          };
+          
+        });
         setUsers(userList);
       } catch (error) {
         console.error("Error fetching users:", error);
       }
     };
 
+
     fetchUsers();
     const intervalId = setInterval(() => {
       incrementDaysForUsers();
-    }, 24 * 60 * 60 * 1000);  // 24 hours in milliseconds
-
-    // Clear the interval on component unmount
+    }, 24 * 60 * 60 * 1000); 
     return () => clearInterval(intervalId);
  
   }, []);
 
-  // Update User in Firestore
+ 
   const handleEditUser = async () => {
     try {
       const userRef = doc(db, 'AdminUser', editingUser.id);
@@ -53,19 +60,47 @@ const Superadmin = () => {
         customerName: editingUser.customerName,
         shopName: editingUser.shopName,
         email: editingUser.email,
+        password:editingUser.password,
         phoneNumber: editingUser.phoneNumber,
         amount: editingUser.amount,
         location: editingUser.location,
         status: editingUser.status,
       });
 
-      // Update state and clear editing mode
+      
       setUsers(users.map(user => (user.id === editingUser.id ? editingUser : user)));
       setEditingUser(null);
     } catch (error) {
       console.error("Error updating user:", error);
     }
   };
+  // const updateValidityToTwoDays = async () => {
+  //   try {
+  //     const now = new Date();
+  //     const twoDaysFromNow = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000); // Adding 2 days in milliseconds
+
+  //     const updatedUsers = users.map(async (user) => {
+  //       const userRef = doc(db, "AdminUser", user.id);
+  //       await updateDoc(userRef, { 
+  //         validity: twoDaysFromNow,
+  //       });
+
+  //       // Update local state as well
+  //       setUsers((prevUsers) =>
+  //         prevUsers.map((u) =>
+  //           u.id === user.id ? { ...u, validity: twoDaysFromNow.toLocaleDateString() } : u
+  //         )
+  //       );
+  //     });
+
+     
+  //     await Promise.all(updatedUsers);
+
+  //     console.log("Validity updated for all users to 2 days from now.");
+  //   } catch (error) {
+  //     console.error("Error updating validity:", error);
+  //   }
+  // };
 
   // Logout function
   const handleLogout = async () => {
@@ -76,30 +111,81 @@ const Superadmin = () => {
       console.error("Logout failed:", error.message);
     }
   };
+
   const incrementDaysForUsers = async () => {
     try {
-      const updatedUsers = [...users]; // Copy current users state
-      const now = new Date().getTime(); // Current time in milliseconds
-  
-      for (let user of updatedUsers) {
-        const userValidity = new Date(user.validity.seconds * 1000).getTime(); // Convert Firestore timestamp to milliseconds
-        const elapsedTime = now - userValidity;
-  
-        // If more than 24 hours have passed since the last update, increment the number of days
-        if (elapsedTime >= 24 * 60 * 60 * 1000) {
-          const updatedDays = (user.numberOfDays || 0) + 1;
-  
-          // Update the Firestore document
-          const userRef = doc(db, 'AdminUser', user.id);
-          await updateDoc(userRef, { numberOfDays: updatedDays });
-  
-          // Update the local state
-          setUsers(users.map(u => u.id === user.id ? { ...u, numberOfDays: updatedDays } : u));
+        const updatedUsers = [...users];
+        const currentDate = new Date();
+
+        console.log('Starting validity check at:', currentDate);
+
+        for (let user of updatedUsers) {
+            console.log('Checking user:', user.id);
+
+            if (!user.validity || !user.validity.seconds) {
+                console.log('Invalid validity date for user:', user.id);
+                continue;
+            }
+
+            // Convert Firestore timestamps to dates
+            const validityDate = new Date(user.validity.seconds * 1000);
+            const createdDate = new Date(user.createdAt.seconds * 1000);
+            
+            // Calculate remaining days
+            const timeDiff = validityDate.getTime() - currentDate.getTime();
+            const remainingDays = Math.max(0, Math.ceil(timeDiff / (1000 * 3600 * 24)));
+
+            try {
+                const userRef = doc(db, 'AdminUser', user.id);
+
+                if (remainingDays === 0) {
+                    console.log('Validity expired! Setting user status to inactive:', user.id);
+                    
+                    await updateDoc(userRef, { 
+                        status: 'inactive',
+                        remainingDays: 0,
+                        lastUpdated: currentDate 
+                    });
+
+                    setUsers(prevUsers => 
+                        prevUsers.map((u) => 
+                            u.id === user.id 
+                                ? { ...u, status: 'inactive', remainingDays: 0 } 
+                                : u
+                        )
+                    );
+                } else {
+                    console.log('Updating remaining days for user:', user.id);
+                    
+                    await updateDoc(userRef, { 
+                        remainingDays: remainingDays,
+                        lastUpdated: currentDate 
+                    });
+
+                    setUsers(prevUsers => 
+                        prevUsers.map((u) => 
+                            u.id === user.id 
+                                ? { ...u, remainingDays: remainingDays } 
+                                : u
+                        )
+                    );
+
+                    console.log('Successfully updated remaining days to:', remainingDays);
+                }
+            } catch (updateError) {
+                console.error('Error updating specific user:', user.id, updateError);
+            }
         }
-      }
     } catch (error) {
-      console.error("Error incrementing days:", error);
+        console.error("Error in incrementDaysForUsers:", error);
     }
+};
+
+  
+  // Function to manually trigger the check
+  const checkNow = () => {
+    console.log('Manual check triggered');
+    incrementDaysForUsers();
   };
   const toggleUserSelection = (userId) => {
     setSelectedUsers((prev) =>
@@ -107,7 +193,7 @@ const Superadmin = () => {
     );
   };
   
-  // Function to handle deletion of users
+  
   const handleDeleteUsers = async () => {
     if (!isSelectionMode) {
       // Enable selection mode first
@@ -115,7 +201,7 @@ const Superadmin = () => {
       return;
     }
   
-    // Proceed with deletion if in selection mode and users are selected
+    
     try {
       const deletePromises = selectedUsers.map((userId) =>
         deleteDoc(doc(db, "AdminUser", userId))
@@ -154,6 +240,7 @@ const Superadmin = () => {
           <IoPersonAddSharp />
         </div>
       </Link>
+      
       <div className="flex justify-center items-center gap-3">
         <button
           onClick={handleDeleteUsers}
@@ -177,7 +264,19 @@ const Superadmin = () => {
           </button>
         )}
       </div>
+      
+        <button 
+          onClick={checkNow}
+          className="flex justify-center items-center gap-2 text-[#000] bg-white px-8 py-3 rounded-lg font-semibold shadow-md hover:shadow-lg transition"
+        >
+          Check Validity
+        </button>
+      
+   
     </div>
+    <div className="mb-5 w-full flex flex-row items-center justify-center gap-4">
+          
+        </div>
         {/* Users Table */}
         <div className="w-full lg:px-5 overflow-x-auto">
           <table className="rounded-t-xl font-semibold text-[#000] w-full border-collapse border border-gray-300">
@@ -188,10 +287,14 @@ const Superadmin = () => {
                 <th className="p-2">Shop Name</th>
                 <th className="p-2">Admin Id</th>
                 <th className="p-2">Email</th>
+                <th className="p-2">Password</th>
                 <th className="p-2">Phone Number</th>
                 <th className="p-2">Amount</th>
                 <th className="p-2">Location</th>
                 <th className="p-2">Status</th>
+                <th className="p-2">Created Date</th>
+                <th className="p-2">Remaining Days</th>
+                <th className="p-2">Validity</th>
                 <th className="p-2">Actions</th>
               </tr>
             </thead>
@@ -215,9 +318,12 @@ const Superadmin = () => {
                     </td>
                     <td>{user.adminId}</td>
                     <td>
+                      {user.email}
+                    </td>
+                    <td>
                       <input
-                        value={editingUser.email}
-                        onChange={(e) => setEditingUser({ ...editingUser, email: e.target.value })}
+                        value={editingUser.password}
+                        onChange={(e) => setEditingUser({ ...editingUser, password: e.target.value })}
                       />
                     </td>
                     <td>
@@ -247,6 +353,10 @@ const Superadmin = () => {
                         <option value="inactive">Inactive</option>
                       </select>
                     </td>
+                    <td>{user.createdAt}</td>
+                    <td>{user.remainingDays}</td>
+                    <td>{user.validity}</td>
+
                     <td>
                       <div className="flex flex-col gap-2 items-center">
                       <button onClick={handleEditUser} className="flex justify-center items-center gap-2 text-[#000] bg-green-400 px-6 py-1 rounded-lg font-semibold text-[13px]">
@@ -275,10 +385,14 @@ const Superadmin = () => {
                     <td>{user.shopName}</td>
                     <td>{user.adminId}</td>
                     <td>{user.email}</td>
+                    <td>{user.password}</td>
                     <td>{user.phoneNumber}</td>
                     <td>{user.amount}</td>
                     <td>{user.location}</td>
                     <td>{user.status}</td>
+                    <td>{user.createdAt}</td>
+                    <td>{user.remainingDays}</td>
+                    <td>{user.validity}</td>
                     <td>
                       <button onClick={() => setEditingUser(user)} className="flex justify-center items-center gap-2 text-white bg-blue-500 px-6 py-1 rounded-sm font-semibold text-[15px]">
                         Edit<FaRegEdit />

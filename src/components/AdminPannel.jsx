@@ -41,7 +41,10 @@ const AdminPannel = () => {
   const [fileName, setFileName] = useState(''); 
   
   const [isUploading1, setIsUploading1] = useState(false);
-
+  const [selectAllItemList, setSelectAllItemList] = useState(false);
+  const [selectAllListScroll, setSelectAllListScroll] = useState(false);
+  const [selectAllSingleScroll, setSelectAllSingleScroll] = useState(false);
+  const [selectAllRows, setSelectAllRows] = useState(false);
  
 
   
@@ -64,6 +67,26 @@ const AdminPannel = () => {
         // Filter items to match the logged-in user ID
         const filteredItems = itemsList.filter(item => item.userId === auth.currentUser.uid);
         setItems(filteredItems);
+        const activeItems = filteredItems.filter(item => item.status === 'active');
+        if (activeItems.length > 0) {
+          // Set checkbox state for Item List
+          const allItemList = activeItems.every(item => 
+            item.displayPreferences?.showInItemList === true
+          );
+          setSelectAllItemList(allItemList);
+  
+          // Set checkbox state for List Scroll
+          const allListScroll = activeItems.every(item => 
+            item.displayPreferences?.showInListScroll === true
+          );
+          setSelectAllListScroll(allListScroll);
+  
+          // Set checkbox state for Single Scroll
+          const allSingleScroll = activeItems.every(item => 
+            item.displayPreferences?.showInSingleScroll === true
+          );
+          setSelectAllSingleScroll(allSingleScroll);
+        }
       });
   
       return () => unsubscribe(); 
@@ -93,14 +116,16 @@ const AdminPannel = () => {
       const item = items.find(item => item.id === id);
       const newStatus = item.status === 'active' ? 'inactive' : 'active';
       
-      // Update the status and display preferences based on the new status
+      // When status changes to active, set all display preferences to true
+      const newDisplayPreferences = {
+        showInItemList: newStatus === 'active' ? true : false,
+        showInListScroll: newStatus === 'active' ? true : false,
+        showInSingleScroll: newStatus === 'active' ? true : false
+      };
+      
       await update(itemRef, {
         status: newStatus,
-        displayPreferences: {
-          showInItemList: newStatus === 'active' ? false : false,
-          showInListScroll: newStatus === 'active' ? false : false,
-          showInSingleScroll: newStatus === 'active' ? false : false
-        }
+        displayPreferences: newDisplayPreferences
       });
     } catch (error) {
       console.error('Error updating status:', error);
@@ -179,9 +204,23 @@ const AdminPannel = () => {
     }
   };
  
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const handleFileUploadClick = () => {
+    // Show alert first
+    alert("Please make sure the Excel file follows this format:\n\n" + 
+          "1. Column 'Name' (required): The name of the item.\n" +
+          "2. Column 'NativeName' (optional): The native name of the item.\n\n" +
+          "3. Column 'Price' (required): The price of the item.\n" +
+          "Ensure that all fields are correctly populated before uploading the file.");
+
+    // Trigger the file input to be clicked after the user clicks OK on the alert
+    document.getElementById('file-input').click(); 
+};
+
+
+const handleFileUpload = async (e) => {
+    const file = e.target.files[0]; 
+
+    if (!file) return; 
 
     const reader = new FileReader();
     reader.onload = (event) => {
@@ -197,25 +236,29 @@ const AdminPannel = () => {
             return;
         }
 
-        // Normalize keys to handle case-insensitive headings
+       
         const normalizedData = parsedData.map(row => {
             const normalizedRow = {};
             Object.keys(row).forEach(key => {
-                normalizedRow[key.toLowerCase()] = row[key]; // Convert all keys to lowercase
+                normalizedRow[key.toLowerCase()] = row[key]; 
             });
             return normalizedRow;
         });
 
-        setExcelData(normalizedData);
-        e.target.value = "";
+        setExcelData(normalizedData); 
+        e.target.value = ""; 
     };
-    reader.readAsArrayBuffer(file);
+
+    reader.readAsArrayBuffer(file); 
 
     setIsUploading1(true); 
-    // alert("Click upload to add data!");
 };
 
+
+
 const uploadExcelData = async () => {
+ 
+    
     setIsUploading(true); 
 
     try {
@@ -229,6 +272,7 @@ const uploadExcelData = async () => {
 
             if (existingItem) {
                 const updatedItemData = {
+                    nativeName: row.nativename || "",
                     price: row.price || 0,
                     updatedAt: new Date().toISOString(),
                 };
@@ -382,6 +426,61 @@ const uploadExcelData = async () => {
       
           fetchHeaderData();
         }, []);
+        const handleSelectAllDisplay = async (displayType) => {
+          const activeItems = items.filter(item => item.status === 'active');
+          const updates = {};
+          
+          let isChecked;
+          switch (displayType) {
+            case 'showInItemList':
+              isChecked = !selectAllItemList; // Toggle the value
+              setSelectAllItemList(isChecked);
+              break;
+            case 'showInListScroll':
+              isChecked = !selectAllListScroll;
+              setSelectAllListScroll(isChecked);
+              break;
+            case 'showInSingleScroll':
+              isChecked = !selectAllSingleScroll;
+              setSelectAllSingleScroll(isChecked);
+              break;
+            default:
+              return;
+          }
+          
+          activeItems.forEach(item => {
+            updates[`items/${item.id}/displayPreferences/${displayType}`] = isChecked;
+          });
+      
+          try {
+            await update(ref(rtDatabase), updates);
+          } catch (error) {
+            console.error('Error updating display preferences:', error);
+          }
+        };
+        const handleSelectAllRowPreferences = async (itemId) => {
+          const item = items.find(item => item.id === itemId);
+          if (item?.status !== 'active') return;
+      
+          // Check if all preferences are currently true
+          const allChecked = Object.values(item.displayPreferences || {}).every(val => val === true);
+          
+          // Toggle to opposite state
+          const newState = !allChecked;
+      
+          try {
+            const itemRef = ref(rtDatabase, `items/${itemId}`);
+            await update(itemRef, {
+              displayPreferences: {
+                showInItemList: newState,
+                showInListScroll: newState,
+                showInSingleScroll: newState
+              }
+            });
+          } catch (error) {
+            console.error('Error updating display preferences:', error);
+          }
+        };
     
   return (
     <div className="  h-screen overflow-auto relative z-[999] bg-white">
@@ -389,7 +488,7 @@ const uploadExcelData = async () => {
         <div  className="flex w-full justify-center items-center flex-col mb-10">
           {/* Navbar */}
           <div  className="w-full  mb-5 ">
-            <div  style={{ backgroundColor: headerColor || "#008000"  }} className="w-full h-[60px]">
+            <div  style={{ backgroundColor: headerColor || "  #008000"  }} className="w-full h-[60px]">
             <div className="flex justify-between font-bold px-6 items-center text-3xl w-full h-full">
               <div  className="w-[100px] md:w-[130px] h-auto">
                 <img src={logo} className="w-full h-full object-contain drop-shadow-md" alt="" />
@@ -426,7 +525,7 @@ const uploadExcelData = async () => {
               </div>
               <div className="grid grid-cols-1 place-content-center md:flex justify-center items-center gap-3">
                 <div>
-                  <button className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300 " onClick={() => document.getElementById('file-input').click()}>Import <PiMicrosoftExcelLogoBold /></button>
+                  <button className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300 "  onClick={handleFileUploadClick}>Import <PiMicrosoftExcelLogoBold /></button>
                   <input
                     id="file-input"
                     key={fileInputKey}
@@ -534,9 +633,34 @@ const uploadExcelData = async () => {
                   <th className="p-2">Price</th>
                   <th className="p-2">Image</th>
                   <th className="p-2">Status</th>
-                  <th className="p-2">Item List</th>
-                  <th className="p-2">List Scroll</th>
-                  <th className="p-2">Single Scroll</th>
+                  <th className="p-2">
+          Item List
+          <input
+            type="checkbox"
+            checked={selectAllItemList}
+            onChange={() => handleSelectAllDisplay('showInItemList')}
+            className="ml-2"
+          />
+        </th>
+        <th className="p-2">
+          List Scroll
+          <input
+            type="checkbox"
+            checked={selectAllListScroll}
+            onChange={() => handleSelectAllDisplay('showInListScroll')}
+            className="ml-2"
+          />
+        </th>
+        <th className="p-2">
+          Single Scroll
+          <input
+            type="checkbox"
+            checked={selectAllSingleScroll}
+            onChange={() => handleSelectAllDisplay('showInSingleScroll')}
+            className="ml-2"
+          />
+        </th>
+        {/* <th className="p-2">All Preferences</th> */}
                 </tr>
               </thead>
               <tbody>
@@ -680,6 +804,19 @@ const uploadExcelData = async () => {
                         className={item.status !== 'active' ? 'opacity-50 cursor-not-allowed' : ''}
                       />
                       </td>
+                      {/* <td className="p-2 text-center">
+                    <input
+                      type="checkbox"
+                      checked={
+                        item.status === 'active' &&
+                        Object.values(item.displayPreferences || {}).every(val => val === true)
+                      }
+                      onChange={
+                      => handleSelectAllRowPreferences(item.id)}
+                      disabled={item.status !== 'active'}
+                      className={item.status !== 'active' ? 'opacity-50 cursor-not-allowed' : ''}
+                    />
+                  </td> */}
                   </tr>
                 ))}
               </tbody>

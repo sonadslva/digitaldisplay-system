@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ref, onValue } from 'firebase/database';
-import { rtDatabase } from './Firebase';
+import { rtDatabase,db } from './Firebase';
 import { getAuth } from 'firebase/auth';
-
+import { doc, getDoc } from "firebase/firestore";
 const GroceryTable = () => {
     const [items, setItems] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -73,9 +73,29 @@ const GroceryTable = () => {
     };
 
     const rows = chunkRows(visibleItems, 2);
+    const [priceListBgColor, setPriceListBgColor] = useState(" #5fbf64");
+    useEffect(() => {
+        if (!userId) return;
+
+        const fetchUserSettings = async () => {
+            const userDocRef = doc(db, `userSettings/${userId}`);
+            try {
+                const snapshot = await getDoc(userDocRef);
+                if (snapshot.exists()) {
+                    const data = snapshot.data();
+                    
+                    setPriceListBgColor(data.priceListBackgroundColor || "  #5fbf64");
+                }
+            } catch (error) {
+                console.error("Error fetching user settings:", error);
+            }
+        };
+
+        fetchUserSettings();
+    }, [userId]);
 
     return (
-        <div className="bg-[#f4f9ba]">
+        <div style={{backgroundColor: priceListBgColor}} className="">
             <div className="text-3xl text-center mb-3 font-bold text-[#000]">Price List</div>
 
             <div className="w-full overflow-x-auto">
@@ -84,7 +104,7 @@ const GroceryTable = () => {
                         <React.Fragment key={rowIndex}>
                             {/* First item in each row */}
                             <div
-                                className={`w-full text-center ${rowIndex % 2 === 0 ? 'bg-[#ddffd1]' : 'bg-[#c2c2c2bd]'} px-8 py-2 font-bold lg:font-medium 2xl:text-[38px]`}
+                                className={`w-full text-center ${rowIndex % 2 === 0 ? 'bg-[#fcfefb]' : 'bg-[#c2c2c2bd]'} px-8 py-2 font-bold lg:font-medium 2xl:text-[20px] 4xl:text-[38px]`}
                             >
                                 {row[0]?.name} -{' '}
                                 <span className="text-[#000000] font-bold">{row[0]?.price}</span>
@@ -93,7 +113,7 @@ const GroceryTable = () => {
                             {/* Second item in each row */}
                             {row[1] && (
                                 <div
-                                    className={`w-full text-center ${rowIndex % 2 === 0 ? 'bg-[#ddffd1]' : 'bg-[#c2c2c2bd]'} px-8 py-2 font-bold 2xl:text-[38px] lg:font-medium`}
+                                    className={`w-full text-center ${rowIndex % 2 === 0 ? 'bg-[#fcfefb]' : 'bg-[#c2c2c2bd]'} px-8 py-2 font-bold 2xl:text-[20px] 4xl:text-[38px] lg:font-medium`}
                                 >
                                     {row[1]?.name} -{' '}
                                     <span className="text-[#000000] font-bold">{row[1]?.price}</span>

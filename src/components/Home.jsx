@@ -12,12 +12,12 @@ import { MdAddBox } from 'react-icons/md';
 
 const Home = () => {
   const navigate = useNavigate();
-  const [headerColor, setHeaderColor] = useState("#175c1b");
-  const [singleScrollColor, setSingleScrollColor] = useState("#218126");
+  const [headerColor, setHeaderColor] = useState(" #175c1b");
+  const [singleScrollColor, setSingleScrollColor] = useState(" #5fbf64");
   const [logo, setLogo] = useState(logoPlaceholder);
   const [userId, setUserId] = useState(null);
-  const [productScrollColor,setProductScrollColor]=useState("#5fbf64")
-
+  const [productScrollColor,setProductScrollColor]=useState(" #5fbf64")
+const [priceListBackgroundColor,setPriceListBackgroundColor]=useState(" #d2ecd3")
   const handleLogout = async () => {
     try {
       await auth.signOut();
@@ -41,10 +41,11 @@ const Home = () => {
 
         if (snapshot.exists()) {
           const data = snapshot.data();
-          setHeaderColor(data.headerColor || "#085a0c");
+          setHeaderColor(data.headerColor || " #175c1b");
           setLogo(data.logoBase64 || logoPlaceholder);
-          setSingleScrollColor(data.singleScrollColor || "#218126");
-          setProductScrollColor(data.productScrollColor || "#5fbf64")
+          setSingleScrollColor(data.singleScrollColor || " #5fbf64");
+          setProductScrollColor(data.productScrollColor || " #5fbf64");
+          setPriceListBackgroundColor(data.priceListBackgroundColor||" #5fbf64");
         }
       } catch (error) {
         console.error("Error fetching user settings:", error);
@@ -100,7 +101,7 @@ const Home = () => {
       </section>
 
       {/* Mobile View: Grocery Table */}
-      <section className="lg:hidden mb-5">
+      <section style={{ backgroundColor: priceListBackgroundColor }} className="lg:hidden mb-5">
         <div className="w-full">
           <GroceryTable />
         </div>

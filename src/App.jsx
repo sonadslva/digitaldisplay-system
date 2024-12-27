@@ -10,6 +10,7 @@ import ProfileVideo from './components/ProfileVideo';
 import Superadmin from './components/Superadmin';
 import Adduser from './components/Adduser';
 import Settings from './components/Settings';
+import PageNotFound from './components/PageNotFound';
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [showHome, setShowHome] = useState(true);
@@ -38,6 +39,7 @@ function App() {
         <Route path='/Superadmin' element={<Superadmin/>}/>
         <Route path='/Adduser' element={<Adduser/>}></Route>
         <Route path='/Settings' element={<Settings/>}></Route>
+        <Route path='/Pagenotfound' element={<PageNotFound/>}></Route>
       </Routes>
       <div>
         {/* {showHome && <Login />} */}

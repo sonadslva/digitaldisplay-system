@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { auth, signInWithEmailAndPassword } from './Firebase';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from './Firebase';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -10,28 +12,46 @@ const Login = () => {
 
     const handleLogin = async () => {
         try {
+            
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
 
             
+            const userDocRef = doc(db, 'AdminUser', user.uid);  
+            const userDocSnap = await getDoc(userDocRef);
             if (user.uid === '43QZgDQCY2OjJehFPyoldb8LnHo1') {
                 navigate('/Superadmin');
-            } else {
-                navigate('/Home'); 
             }
-        } catch (error) {
-            setError('Invalid email or password');
-          
+            else{
+            if (userDocSnap.exists()) {
+                const userData = userDocSnap.data();
+
+                
+                if (userData.status === 'inactive') {
+                    
+                    navigate('/PageNotFound');
+                } else {
+                    
+                    navigate('/Home');
+                }
+            } else {
+                
+                console.error("No user data found for this UID");
+                setError('User data not found. Please contact support.');
+            }
         }
+        } catch (error) {
+            console.error("Login Error:", error.message);
+            setError('Invalid email or password');
+        }
+    
     };
 
     return (
         <div className="relative z-[998] min-h-screen bg-grey-900 flex items-center justify-center">
             <div className="w-full max-w-[400px] bg-white shadow-md rounded-lg p-6 border-2">
-                {/* Header */}
                 <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Login</h2>
 
-                {/* Input Fields */}
                 <div className="space-y-4">
                     <input
                         type="email"
@@ -50,12 +70,13 @@ const Login = () => {
                         required
                     />
                 </div>
+                
                 {error && (
                     <div className="text-red-500 text-center mb-4">
                         {error}
                     </div>
                 )}
-                {/* Login Button */}
+                
                 <div className="mt-6">
                     <button
                         onClick={handleLogin}
@@ -64,8 +85,6 @@ const Login = () => {
                         Login
                     </button>
                 </div>
-
-              
             </div>
         </div>
     );
