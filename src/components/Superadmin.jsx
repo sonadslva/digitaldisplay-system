@@ -186,7 +186,7 @@ const Superadmin = () => {
     // Cleanup function
     return () => clearInterval(intervalId);
   }, [users]);
-  
+
   const toggleUserSelection = (userId) => {
     setSelectedUsers((prev) =>
       prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
@@ -285,7 +285,7 @@ const Superadmin = () => {
               {(isSelectionMode) && <th className="p-2">Select</th>}
                 <th className="p-2">Customer Name</th>
                 <th className="p-2">Shop Name</th>
-                <th className="p-2">Admin Id</th>
+                {/* <th className="p-2">Admin Id</th> */}
                 <th className="p-2">Email</th>
                 <th className="p-2">Password</th>
                 <th className="p-2">Phone Number</th>
@@ -316,7 +316,7 @@ const Superadmin = () => {
                         onChange={(e) => setEditingUser({ ...editingUser, shopName: e.target.value })}
                       />
                     </td>
-                    <td>{user.adminId}</td>
+                    {/* <td>{user.adminId}</td> */}
                     <td>
                       {user.email}
                     </td>
@@ -383,7 +383,7 @@ const Superadmin = () => {
                       )}
                     <td>{user.customerName}</td>
                     <td>{user.shopName}</td>
-                    <td>{user.adminId}</td>
+                    {/* <td>{user.adminId}</td> */}
                     <td>{user.email}</td>
                     <td>{user.password}</td>
                     <td>{user.phoneNumber}</td>
