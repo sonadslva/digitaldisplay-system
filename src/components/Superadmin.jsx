@@ -115,63 +115,56 @@ const Superadmin = () => {
   const incrementDaysForUsers = async () => {
     try {
         const updatedUsers = [...users];
-        const currentDate = new Date();
+        const currentDate = Timestamp.fromDate(new Date()); // Convert to Firestore timestamp
 
-        console.log('Starting validity check at:', currentDate);
+        console.log('Starting validity check at:', currentDate.toDate());
 
         for (let user of updatedUsers) {
             console.log('Checking user:', user.id);
 
-            if (!user.validity || !user.validity.seconds) {
+            // Check both validity formats since the data might be in different formats
+            const validitySeconds = user.validity?.seconds || 
+                                  (typeof user.validity === 'string' ? new Date(user.validity).getTime() / 1000 : null);
+
+            if (!validitySeconds) {
                 console.log('Invalid validity date for user:', user.id);
                 continue;
             }
 
             // Convert Firestore timestamps to dates
-            const validityDate = new Date(user.validity.seconds * 1000);
-            const createdDate = new Date(user.createdAt.seconds * 1000);
+            const validityDate = new Date(validitySeconds * 1000);
             
             // Calculate remaining days
-            const timeDiff = validityDate.getTime() - currentDate.getTime();
+            const timeDiff = validityDate.getTime() - currentDate.toDate().getTime();
             const remainingDays = Math.max(0, Math.ceil(timeDiff / (1000 * 3600 * 24)));
 
             try {
                 const userRef = doc(db, 'AdminUser', user.id);
+                const updates = {
+                    remainingDays,
+                    lastUpdated: currentDate
+                };
 
                 if (remainingDays === 0) {
                     console.log('Validity expired! Setting user status to inactive:', user.id);
-                    
-                    await updateDoc(userRef, { 
-                        status: 'inactive',
-                        remainingDays: 0,
-                        lastUpdated: currentDate 
-                    });
-
-                    setUsers(prevUsers => 
-                        prevUsers.map((u) => 
-                            u.id === user.id 
-                                ? { ...u, status: 'inactive', remainingDays: 0 } 
-                                : u
-                        )
-                    );
-                } else {
-                    console.log('Updating remaining days for user:', user.id);
-                    
-                    await updateDoc(userRef, { 
-                        remainingDays: remainingDays,
-                        lastUpdated: currentDate 
-                    });
-
-                    setUsers(prevUsers => 
-                        prevUsers.map((u) => 
-                            u.id === user.id 
-                                ? { ...u, remainingDays: remainingDays } 
-                                : u
-                        )
-                    );
-
-                    console.log('Successfully updated remaining days to:', remainingDays);
+                    updates.status = 'inactive';
                 }
+
+                await updateDoc(userRef, updates);
+
+                setUsers(prevUsers => 
+                    prevUsers.map((u) => 
+                        u.id === user.id 
+                            ? { 
+                                ...u, 
+                                ...updates,
+                                status: remainingDays === 0 ? 'inactive' : u.status
+                              } 
+                            : u
+                    )
+                );
+
+                console.log(`Successfully updated user ${user.id} with remaining days: ${remainingDays}`);
             } catch (updateError) {
                 console.error('Error updating specific user:', user.id, updateError);
             }
@@ -180,13 +173,20 @@ const Superadmin = () => {
         console.error("Error in incrementDaysForUsers:", error);
     }
 };
-
-  
   // Function to manually trigger the check
   const checkNow = () => {
     console.log('Manual check triggered');
     incrementDaysForUsers();
   };
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      incrementDaysForUsers(); // Call the function every 24 hours
+    }, 24 * 60 * 60 * 1000); // 24 hours in milliseconds
+  
+    // Cleanup function
+    return () => clearInterval(intervalId);
+  }, [users]);
+  
   const toggleUserSelection = (userId) => {
     setSelectedUsers((prev) =>
       prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]

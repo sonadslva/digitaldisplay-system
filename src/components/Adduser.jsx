@@ -28,20 +28,19 @@ const Adduser = () => {
                 return;
             }
     
-            // Create user in Firebase Authentication
+           
             const userCredential = await createUserWithEmailAndPassword(auth, newUser.email, newUser.password);
             const user = userCredential.user;
     
-            // Generate unique admin ID
+           
             const adminId = `ADMIN-${uuidv4()}`;
           
-            // Calculate validity (1 day from now)
+          
             const currentDate = new Date();
             const validityDate = new Date(currentDate);
-            validityDate.setDate(currentDate.getDate() + 1); // Validity for 1 day
+            validityDate.setFullYear(currentDate.getFullYear() + 1) 
             const timeDiff = validityDate.getTime() - currentDate.getTime();
-            const remainingDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); // Should result in 1 day
-    
+            const remainingDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
             const userToAdd = {
                 ...newUser,
                 adminId,
