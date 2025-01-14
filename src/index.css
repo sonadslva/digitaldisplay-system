@@ -106,7 +106,9 @@ table{
 .product-slider {
   display: flex;
   gap: 20px;
-  animation: scroll 20s linear infinite;
+  animation-name: scroll;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
 }
 
 @keyframes scroll {
@@ -209,6 +211,16 @@ table{
     transform: translateX(-100%);
   }
 }
+
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
 
 .SingleScrollBackground{
   background: linear-gradient(130deg, #e6f87e 0%, #e6f87e 38%, #b0e3d9 100%);

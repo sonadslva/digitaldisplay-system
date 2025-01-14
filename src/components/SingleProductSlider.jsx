@@ -87,36 +87,54 @@ const SingleProductSlider = () => {
     }
 
     return (
-        <div className="w-full h-full" >
-            <div className="w-full flex justify-center items-center h-full">
-                <div className="w-[90%] bg-[#fefefe] h-[300px] rounded-3xl lg:h-full BoxShadow py-3 overflow-hidden relative">
-                    <div ref={scrollContainerRef} className="flex w-full h-full transition-transform duration-700">
-                        {products.map((product, index) => (
-                            <div key={index} className="w-full h-full flex-shrink-0 flex flex-col justify-between overflow-hidden">
-                                <div className="flex flex-col items-center justify-center h-full">
-                                    {/* Image Section */}
-                                    <div className="w-[73%] h-[53%] flex justify-center items-center mb-4">
-                                        <img src={product.img} className="w-full h-full object-contain" alt={product.name} />
-                                    </div>
-
-                                    {/* Product Name Section */}
-                                    <div className="text-center font-extrabold flex flex-col text-xl lg:text-[45px] text-[#201e1e] mb-4 PriceName">
-                                       <span className='mb-5'>{product.name}</span> 
-                                        <p className='text-[35px] mt-2'>{product.nativeName}</p>
-                                    </div>
-
-                                    {/* Price Section */}
-                                    <div  style={{ backgroundColor: priceBgColor,color:fontColor }} className="w-full h-[70px] text-center flex justify-center items-center bg-[#68b244] rounded-3xl text-[#fff] py-3  2xl:py-14 text-xl lg:text-3xl 3xl:text-[70px]">
-                                        <FaRupeeSign />
-                                        <span  className="ml-1 3xl:text-[90px] lg:text-[60px] font-bold PriceFont">{product.price}.0</span>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+        <div className="w-full h-full">
+        <div className="w-full flex justify-center items-center h-full">
+          <div className="w-[90%] bg-[#fefefe] h-[300px] 2xl:h-[500px] 3xl:h-[600px] 4xl:h-[700px] rounded-3xl lg:h-full BoxShadow py-3 overflow-hidden relative">
+            <div ref={scrollContainerRef} className="flex w-full h-full transition-transform duration-700">
+              {products.map((product, index) => (
+                <div
+                  key={index}
+                  className="w-full h-full flex-shrink-0 flex flex-col justify-between relative overflow-hidden"
+                >
+                  <div className="flex flex-col items-center h-full px-4">
+                    {/* Image Section */}
+                    <div className="w-[70%] h-[45%] flex justify-center items-center mt-2 lg:mt-4">
+                      <img
+                        src={product.img}
+                        className="w-full h-full object-contain"
+                        alt={product.name}
+                      />
                     </div>
+      
+                    {/* Name Section */}
+                    <div className="w-full mt-4 lg:mt-6 text-center">
+                      <span className="block font-extrabold text-2xl lg:text-3xl 2xl:text-4xl text-[#201e1e]">
+                        {product.name}
+                      </span>
+                      <span className="block font-bold text-lg lg:text-2xl 2xl:text-3xl text-gray-600 mt-1">
+                        {product.nativeName}
+                      </span>
+                    </div>
+      
+                    {/* Price Section */}
+                    <div
+                      style={{
+                        backgroundColor: priceBgColor,
+                        color: fontColor,
+                      }}
+                      className="w-full absolute bottom-0 h-[70px] lg:h-[80px] text-center flex justify-center items-center rounded-3xl text-[#fff] text-4xl lg:text-5xl xl:text-6xl 2xl:text-7xl font-bold"
+                    >
+                      <FaRupeeSign />
+                      <span className="ml-1">{product.price}.0</span>
+                    </div>
+                  </div>
                 </div>
+              ))}
             </div>
+          </div>
         </div>
+      </div>
+      
     );
 };
 

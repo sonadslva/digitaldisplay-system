@@ -58,9 +58,9 @@ const [priceListBackgroundColor,setPriceListBackgroundColor]=useState(" #d2ecd3"
   return (
     <div className="h-screen w-full overflow-auto lg:overflow-hidden">
       {/* Logo Section */}
-      <section style={{ backgroundColor: headerColor }} className="w-full py-[15px] fixed top-0 left-0 z-[998]">
-        <nav className="px-4 flex justify-between items-center h-[35px]">
-          <div className="w-[100px] md:w-[130px] h-auto">
+      <section style={{ backgroundColor: headerColor }} className="w-full py-1  top-0 left-0 z-[998]">
+        <nav className="px-4 flex justify-between items-center">
+          <div className="w-[100px] md:w-[100px] h-auto">
             <img src={logo} className="w-full h-full object-contain drop-shadow-md" alt="Logo" />
           </div>
           <div className="flex justify-evenly space-x-4">
@@ -77,10 +77,10 @@ const [priceListBackgroundColor,setPriceListBackgroundColor]=useState(" #d2ecd3"
       </section>
 
       {/* Main Content Section */}
-      <div className="lg:pt-[60px] lg:h-[calc(75vh-60px)] flex flex-col lg:flex-row justify-between items-start mb-5 border-b-2 -z-10 overflow-auto">
+      <div className=" lg:h-[calc(75vh-60px)] flex flex-col lg:flex-row justify-between items-start mb-5 border-b-2 -z-10 overflow-auto">
         {/* Single Product Slider */}
-        <section className="flex justify-center items-center w-full lg:w-[50%] pt-14 lg:pt-0 h-[50%] lg:h-full mb-4 lg:mb-0">
-          <div style={{ backgroundColor: singleScrollColor }} className="w-full flex justify-center items-center h-full py-5">
+        <section className="flex justify-center items-center w-full lg:w-[50%] pt-14 lg:pt-0 h-[50%] 2xl:mt-[-30px] lg:h-full mb-4 lg:mb-0">
+          <div style={{ backgroundColor: singleScrollColor }} className="w-full flex justify-center items-center h-full">
             <SingleProductSlider />
           </div>
         </section>
@@ -94,7 +94,7 @@ const [priceListBackgroundColor,setPriceListBackgroundColor]=useState(" #d2ecd3"
       </div>
 
       {/* Product Scroll Section */}
-      <section style={{ backgroundColor :productScrollColor}} className="h-auto px-4 overflow-hidden relative z-50 lg:mb-10">
+      <section style={{ backgroundColor :productScrollColor}} className="h-auto w-full  px-5 overflow-hidden relative z-50 lg:mb-10 md:fixed md:bottom-[-10px]">
         <div  className="w-full h-full">
           <ProductScroll />
         </div>

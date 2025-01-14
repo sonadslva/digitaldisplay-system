@@ -1,25 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { ref, onValue } from 'firebase/database';
-import { rtDatabase,db } from './Firebase';
+import { rtDatabase, db } from './Firebase';
 import { getAuth } from 'firebase/auth';
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc } from 'firebase/firestore';
+
 const GroceryTable = () => {
     const [items, setItems] = useState([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [userId, setUserId] = useState(null);
 
-    // Get user ID after authentication
     useEffect(() => {
         const auth = getAuth();
         const unsubscribe = auth.onAuthStateChanged(user => {
-            setUserId(user ? user.uid : null); // Set userId based on auth state
+            setUserId(user ? user.uid : null);
         });
         return () => unsubscribe();
     }, []);
 
-    // Fetch data from Firebase when userId is available
     useEffect(() => {
-        if (!userId) return; // Skip fetching if no user is authenticated
+        if (!userId) return;
 
         const itemsRef = ref(rtDatabase, 'items');
         const unsubscribe = onValue(itemsRef, (snapshot) => {
@@ -38,9 +37,8 @@ const GroceryTable = () => {
         });
 
         return () => unsubscribe();
-    }, [userId]); // Re-run when userId changes
+    }, [userId]);
 
-    // Paginate items into chunks of 18
     const chunkArray = (array, size) => {
         const result = [];
         for (let i = 0; i < array.length; i += size) {
@@ -51,40 +49,27 @@ const GroceryTable = () => {
 
     const paginatedItems = chunkArray(items, 14);
 
-    // Update the visible items every 10 seconds
     useEffect(() => {
         const interval = setInterval(() => {
             setCurrentIndex((prevIndex) => (prevIndex + 1) % paginatedItems.length);
-        }, 10000); // 10 seconds
+        }, 10000);
 
-        return () => clearInterval(interval); // Cleanup on unmount
+        return () => clearInterval(interval);
     }, [paginatedItems]);
 
-    // Ensure at least one page of items to display
     const visibleItems = paginatedItems[currentIndex] || [];
+    const [priceListBgColor, setPriceListBgColor] = useState("#fff");
 
-    // Function to chunk rows into groups of 2 items for display
-    const chunkRows = (array, size) => {
-        const result = [];
-        for (let i = 0; i < array.length; i += size) {
-            result.push(array.slice(i, i + size));
-        }
-        return result;
-    };
-
-    const rows = chunkRows(visibleItems, 2);
-    const [priceListBgColor, setPriceListBgColor] = useState(" #5fbf64");
     useEffect(() => {
         if (!userId) return;
 
         const fetchUserSettings = async () => {
-            const userDocRef = doc(db, `userSettings/${userId}`);
+            const userDocRef = doc(db,`userSettings/${userId}`);
             try {
                 const snapshot = await getDoc(userDocRef);
                 if (snapshot.exists()) {
                     const data = snapshot.data();
-                    
-                    setPriceListBgColor(data.priceListBackgroundColor || "  #5fbf64");
+                    setPriceListBgColor(data.priceListBackgroundColor || "#fff");
                 }
             } catch (error) {
                 console.error("Error fetching user settings:", error);
@@ -95,31 +80,64 @@ const GroceryTable = () => {
     }, [userId]);
 
     return (
-        <div style={{backgroundColor: priceListBgColor}} className="">
-            <div className="text-3xl text-center mb-3 font-bold text-[#000]">Price List</div>
+        <div style={{ backgroundColor: priceListBgColor }} className="relative ">
+           <style>
+  {`
+    @keyframes scrollText {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+    .marquee-container {
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      min-height: 3rem;
+    }
+    .scrolling-text {
+      position: absolute;
+      white-space: nowrap;
+      will-change: transform;
+      animation: scrollText 18s linear infinite;
+      width: max-content;
+    }
+  `}
+</style>
+
+
+            <div className="text-3xl text-center mb-3 font-bold text-[#000]">
+                Price List
+            </div>
 
             <div className="w-full overflow-x-auto">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-5">
-                    {rows.map((row, rowIndex) => (
-                        <React.Fragment key={rowIndex}>
-                            {/* First item in each row */}
-                            <div
-                                className={`w-full text-center ${rowIndex % 2 === 0 ? 'bg-[#fcfefb]' : 'bg-[#c2c2c2bd]'} px-8 py-2 font-bold lg:font-medium 2xl:text-[20px] 4xl:text-[38px]`}
-                            >
-                                {row[0]?.name} -{' '}
-                                <span className="text-[#000000] font-bold">{row[0]?.price}</span>
+                    {visibleItems.map((item, index) => (
+                        <div
+                            key={index}
+                            className={`
+                                w-full 
+                                ${Math.floor(index/2) % 2 === 0 ? "bg-[#fcfefb]" : "bg-[#c2c2c2bd]"}
+                                px-8 
+                                py-2
+                                font-bold 
+                                lg:font-medium 
+                                2xl:text-[20px]
+                                4xl:text-[38px]
+                            `}
+                        >
+                            <div className="marquee-container h-auto">
+                                {item.name.length > 22 ? (
+                                    <div className="scrolling-text">
+                                        {item.name} -{" "}
+                                        <span className="text-[#000000] font-bold">{item.price}</span>
+                                    </div>
+                                ) : (
+                                    <div className="text-center">
+                                        {item.name} -{" "}
+                                        <span className="text-[#000000] font-bold">{item.price}</span>
+                                    </div>
+                                )}
                             </div>
-
-                            {/* Second item in each row */}
-                            {row[1] && (
-                                <div
-                                    className={`w-full text-center ${rowIndex % 2 === 0 ? 'bg-[#fcfefb]' : 'bg-[#c2c2c2bd]'} px-8 py-2 font-bold 2xl:text-[20px] 4xl:text-[38px] lg:font-medium`}
-                                >
-                                    {row[1]?.name} -{' '}
-                                    <span className="text-[#000000] font-bold">{row[1]?.price}</span>
-                                </div>
-                            )}
-                        </React.Fragment>
+                        </div>
                     ))}
                 </div>
             </div>

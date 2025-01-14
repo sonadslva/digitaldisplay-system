@@ -9,6 +9,10 @@ import { signOut } from 'firebase/auth';
 import { FaUserAltSlash, FaRegEdit } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 import { IoPersonAdd, IoPersonAddSharp } from "react-icons/io5";
+import { writeBatch } from "firebase/firestore";
+import { deleteUser, getAuth } from 'firebase/auth';
+
+
 const Superadmin = () => {
   const [users, setUsers] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
@@ -24,8 +28,6 @@ const Superadmin = () => {
         const querySnapshot = await getDocs(collection(db, 'AdminUser'));
         const userList = querySnapshot.docs.map(doc => {
           const data = doc.data();
-          
-
   
           // Convert Firestore timestamps to Date objects or readable strings
           return {
@@ -33,23 +35,20 @@ const Superadmin = () => {
             ...data,
             validity: data.validity ? new Date(data.validity.seconds * 1000).toLocaleDateString() : 'N/A',
             createdAt: data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleDateString() : 'N/A',
-           
           };
-          
         });
         setUsers(userList);
       } catch (error) {
         console.error("Error fetching users:", error);
       }
     };
-
-
+  
     fetchUsers();
     const intervalId = setInterval(() => {
-      incrementDaysForUsers();
-    }, 24 * 60 * 60 * 1000); 
+      incrementDaysForUsers(); // Call the function every 24 hours
+    }, 24 * 60 * 60 * 1000); // 24 hours in milliseconds
     return () => clearInterval(intervalId);
- 
+  
   }, []);
 
  
@@ -74,35 +73,8 @@ const Superadmin = () => {
       console.error("Error updating user:", error);
     }
   };
-  // const updateValidityToTwoDays = async () => {
-  //   try {
-  //     const now = new Date();
-  //     const twoDaysFromNow = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000); // Adding 2 days in milliseconds
 
-  //     const updatedUsers = users.map(async (user) => {
-  //       const userRef = doc(db, "AdminUser", user.id);
-  //       await updateDoc(userRef, { 
-  //         validity: twoDaysFromNow,
-  //       });
-
-  //       // Update local state as well
-  //       setUsers((prevUsers) =>
-  //         prevUsers.map((u) =>
-  //           u.id === user.id ? { ...u, validity: twoDaysFromNow.toLocaleDateString() } : u
-  //         )
-  //       );
-  //     });
-
-     
-  //     await Promise.all(updatedUsers);
-
-  //     console.log("Validity updated for all users to 2 days from now.");
-  //   } catch (error) {
-  //     console.error("Error updating validity:", error);
-  //   }
-  // };
-
-  // Logout function
+ 
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -111,6 +83,7 @@ const Superadmin = () => {
       console.error("Logout failed:", error.message);
     }
   };
+
 
   const incrementDaysForUsers = async () => {
     try {
@@ -178,6 +151,8 @@ const Superadmin = () => {
     console.log('Manual check triggered');
     incrementDaysForUsers();
   };
+
+  
   useEffect(() => {
     const intervalId = setInterval(() => {
       incrementDaysForUsers(); // Call the function every 24 hours
@@ -186,6 +161,7 @@ const Superadmin = () => {
     // Cleanup function
     return () => clearInterval(intervalId);
   }, [users]);
+
 
   const toggleUserSelection = (userId) => {
     setSelectedUsers((prev) =>
@@ -196,26 +172,47 @@ const Superadmin = () => {
   
   const handleDeleteUsers = async () => {
     if (!isSelectionMode) {
-      // Enable selection mode first
       setIsSelectionMode(true);
       return;
     }
   
+    const auth = getAuth();
     
     try {
-      const deletePromises = selectedUsers.map((userId) =>
-        deleteDoc(doc(db, "AdminUser", userId))
-      );
+      for (const userId of selectedUsers) {
+        try {
+          // 1. Get the user document from Firestore
+          const userDoc = await getDoc(doc(db, "AdminUser", userId));
+          const userData = userDoc.data();
   
-      await Promise.all(deletePromises);
+          if (userData && userData.email) {
+            // 2. Delete from Authentication if user exists
+            try {
+              await deleteUser(auth, userId);
+            } catch (authError) {
+              console.error(`Auth deletion error for ${userId}:`, authError);
+              // Continue with Firestore deletion even if auth deletion fails
+            }
+          }
   
-      // Update local state
+          // 3. Delete from Firestore
+          await deleteDoc(doc(db, "AdminUser", userId));
+  
+        } catch (error) {
+          console.error(`Error deleting user ${userId}:`, error);
+          // Continue with other deletions even if one fails
+        }
+      }
+  
+      // 4. Update local state
       setUsers(users.filter((user) => !selectedUsers.includes(user.id)));
       setSelectedUsers([]); // Clear selected users
       setIsSelectionMode(false); // Exit selection mode
+      
     } catch (error) {
-      console.error("Error deleting users:", error);
-    }
+      console.error("Error in delete operation:", error);
+      // Handle error appropriately (e.g., show error message to user)
+    }
   };
   
   return (

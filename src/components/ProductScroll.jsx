@@ -8,6 +8,7 @@ const ProductScroll = () => {
   const [products, setProducts] = useState([]);
   const [userId, setUserId] = useState(null);
   const sliderRef = useRef(null);
+  const [animationDuration, setAnimationDuration] = useState([])
 
   useEffect(() => {
     // Get user ID after authentication
@@ -33,6 +34,10 @@ const ProductScroll = () => {
             name: item.name
           }));
         setProducts(productsList);
+
+        const totalWidth = productsList.length * 200;
+        const duration = totalWidth / 80;
+        setAnimationDuration(duration);
       }
     });
 
@@ -71,8 +76,8 @@ const ProductScroll = () => {
         className="product-slider flex transition-transform duration-[15s] ease-linear"
         ref={sliderRef}
         style={{
-          transform: `translateX(-${100 / doubledProducts.length}%)`, 
-          width: `${doubledProducts.length * 200}px`, 
+          width: `${products.length * 200}px`,
+          animationDuration: `${animationDuration}s`,
         }}
       >
         {doubledProducts.map((product, index) => (

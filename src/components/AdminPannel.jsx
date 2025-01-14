@@ -45,7 +45,7 @@ const AdminPannel = () => {
   const [selectAllListScroll, setSelectAllListScroll] = useState(false);
   const [selectAllSingleScroll, setSelectAllSingleScroll] = useState(false);
   const [selectAllRows, setSelectAllRows] = useState(false);
- 
+  const [selectAll, setSelectAll] = useState(false);
 
   
 
@@ -145,7 +145,7 @@ const AdminPannel = () => {
   };
 
   const handleEdit = (id, field, value) => {
-    console.log(`Updating ${field} for ${id}: ${value}`); // Debugging
+    console.log(`Updating ${field} for ${id}: ${value}`); 
     setEditedItems(prev => ({
       ...prev,
       [id]: { ...prev[id], [field]: value }
@@ -347,7 +347,8 @@ const uploadExcelData = async () => {
       setCurrentItemId(id); // Set the current item ID
       document.getElementById(`img-input-${id}`).click(); // Trigger specific file input
     };
-  
+  // 2. Update the imageUpdate function to handle the edit case
+
     const imageUpdate = (e) => {
       const file = e.target.files[0];
       if (file) {
@@ -355,52 +356,58 @@ const uploadExcelData = async () => {
           alert("Image size should be less than 500KB");
           return;
         }
-  
+    
         setIsUploading2(true);
-  
+    
         const reader = new FileReader();
         reader.onloadend = () => {
-          const base64String = reader.result; 
+          const base64String = reader.result;
           setBase64Image(base64String);
           setImagePreview(base64String);
+          
+          // Automatically trigger update if editing existing image
+          if (currentItemId) {
+            handleAddImageToItem(base64String, currentItemId);
+          }
+          
           setIsUploading2(false);
         };
-        reader.readAsDataURL(file); 
+        reader.readAsDataURL(file);
       }
     };
   
-    const handleAddImageToItem = async () => {
-      if (!currentItemId || !base64Image) {
+    const handleAddImageToItem = async (imageData, itemId) => {
+      if (!itemId || !imageData) {
         alert("Please select an image");
         return;
       }
     
       try {
+        setIsUploading2(true);
+        
         const itemData = {
-          image: base64Image,
+          image: imageData,
+          updatedAt: new Date().toISOString()
         };
     
-       
-    const firestoreRef = doc(db, "items", currentItemId);
+        // Update only Realtime Database
+        const realtimeRef = ref(rtDatabase, `items/${itemId}`);
+        await update(realtimeRef, itemData);
     
+        // Reset states after successful update
+        setImagePreview(null);
+        setBase64Image(null);
+        setCurrentItemId(null);
+        setIsUploading2(false);
     
-    await setDoc(firestoreRef, itemData, { merge: true });
-
-    
-    const realtimeRef = ref(rtDatabase, `items/${currentItemId}`);
-    await update(realtimeRef, itemData);
-
-    alert("Item updated with new image!");
-
-    setImagePreview(null);
-    setBase64Image(null);
-    setCurrentItemId(null);
+        alert("Image updated successfully!");
       } catch (error) {
         console.error("Error updating item:", error);
-        // alert("Error updating item. Please try again.");
+        alert("Error updating image. Please try again.");
+        setIsUploading2(false);
       }
-     
     };
+
       const [headerColor, setHeaderColor] = useState("rgb(23, 92, 27)");
       const [logo, setLogo] = useState(logoPlaceholder);
       
@@ -481,25 +488,74 @@ const uploadExcelData = async () => {
             console.error('Error updating display preferences:', error);
           }
         };
-    
+        // 1. Modify the handleImageEdit function to properly handle the image preview
+const handleImageEdit = (id) => {
+  setCurrentItemId(id);
+  setImagePreview(null); // Reset preview when starting new edit
+  setBase64Image(null); // Reset base64 data
+  document.getElementById(`img-input-${id}`).click();
+};
+      
+        const handleDeleteImage = async (id) => {
+          try {
+            const itemRef = ref(rtDatabase, `items/${id}`);
+            await update(itemRef, {
+              image: ''
+            });
+      
+            const firestoreRef = doc(db, "items", id);
+            await updateDoc(firestoreRef, {
+              image: ''
+            });
+      
+            alert("Image deleted successfully!");
+          } catch (error) {
+            console.error("Error deleting image:", error);
+            alert("Error deleting image. Please try again.");
+          }
+        };
+      
+        const handleSelectAll = (e) => {
+          setSelectAll(e.target.checked);
+          if (e.target.checked) {
+            setSelectedItems(filteredItems.map(item => item.id));
+          } else {
+            setSelectedItems([]);
+          }
+        };
   return (
     <div className="  h-screen overflow-auto relative z-[999] bg-white">
-      <section >
-        <div  className="flex w-full justify-center items-center flex-col mb-10">
+      <section>
+        <div className="flex w-full justify-center items-center flex-col mb-10">
           {/* Navbar */}
-          <div  className="w-full  mb-5 ">
-            <div  style={{ backgroundColor: headerColor || "  #008000"  }} className="w-full h-[60px]">
-            <div className="flex justify-between font-bold px-6 items-center text-3xl w-full h-full">
-              <div  className="w-[100px] md:w-[130px] h-auto">
-                <img src={logo} className="w-full h-full object-contain drop-shadow-md" alt="" />
+          <section
+            style={{ backgroundColor: headerColor }}
+            className="w-full py-1  top-0 left-0 z-[998]  "
+          >
+            <nav className="px-4 flex justify-between items-center ">
+              <div className="w-[100px] md:w-[100px] h-auto">
+                <img
+                  src={logo}
+                  className="w-full h-full object-contain drop-shadow-md"
+                  alt="Logo"
+                />
               </div>
               <div className="flex justify-evenly space-x-4">
-              <button className="lg:font-bold font-medium lg:text-2xl text-[#000] bg-[#fff] p-2 rounded-full " onClick={() => navigate("/home")}><FaDisplay /></button>
-              <button className="lg:font-bold font-medium lg:text-2xl text-[#000] bg-[#fff] p-2 rounded-full " onClick={handleLogout}><FaUserAltSlash /></button>
+                <button
+                  className="lg:font-bold font-medium lg:text-2xl text-[#000] bg-[#fff] p-2 rounded-full "
+                  onClick={() => navigate("/home")}
+                >
+                  <FaDisplay />
+                </button>
+                <button
+                  className="lg:font-bold font-medium lg:text-2xl text-[#000] bg-[#fff] p-2 rounded-full "
+                  onClick={handleLogout}
+                >
+                  <FaUserAltSlash />
+                </button>
               </div>
-            </div>
-            </div>
-          </div>
+            </nav>
+          </section>
 
           {/* Controls */}
           <div className="mb-5 w-full">
@@ -507,51 +563,64 @@ const uploadExcelData = async () => {
               <div className=" flex justify-center items-center gap-3 mb-5 lg:mb-0">
                 <Link to="/addItem">
                   <div className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300">
-                    Add Item <span><BsFillPlusSquareFill /></span>
+                    Add Item{" "}
+                    <span>
+                      <BsFillPlusSquareFill />
+                    </span>
                   </div>
                 </Link>
                 <Link to="/BackgroundVideo">
                   <div className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300">
-                    Bg Video <span><SiGoogledisplayandvideo360 /></span>
+                    Bg Video{" "}
+                    <span>
+                      <SiGoogledisplayandvideo360 />
+                    </span>
                   </div>
                 </Link>
                 <Link to="/Settings">
                   <div className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-6 py-3 rounded-lg font-semibold border-2 bg-gray-300">
                     <IoMdSettings />
-
-                
                   </div>
                 </Link>
               </div>
               <div className="grid grid-cols-1 place-content-center md:flex justify-center items-center gap-3">
                 <div>
-                  <button className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300 "  onClick={handleFileUploadClick}>Import <PiMicrosoftExcelLogoBold /></button>
+                  <button
+                    className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300 "
+                    onClick={handleFileUploadClick}
+                  >
+                    Import <PiMicrosoftExcelLogoBold />
+                  </button>
                   <input
                     id="file-input"
                     key={fileInputKey}
                     type="file"
                     accept=".xlsx, .xls"
-                    style={{ display: 'none' }} // Hide the input element
+                    style={{ display: "none" }} // Hide the input element
                     onChange={handleFileUpload}
-                    />
+                  />
                 </div>
                 <>
-                    {excelData.length > 0 && !isUploading && (  // Only show button if there's data and not uploading
+                  {excelData.length > 0 &&
+                    !isUploading && ( // Only show button if there's data and not uploading
                       <div>
                         <button
                           className="flex justify-center items-center gap-2 text-[#000] bg-green-500 px-8 py-2 rounded-lg font-semibold border-2 "
                           onClick={uploadExcelData}
                           disabled={isUploading || excelData.length === 0}
                         >
-                          {isUploading ? "Uploading..." :<SiTicktick />}
+                          {isUploading ? "Uploading..." : <SiTicktick />}
                         </button>
-                        <button className="flex justify-center items-center gap-2 text-[#000] bg-red-500 px-8 py-2 rounded-lg font-semibold border-2 " onClick={handleCancel} disabled={isUploading}>
-                        <RxCross2 />
+                        <button
+                          className="flex justify-center items-center gap-2 text-[#000] bg-red-500 px-8 py-2 rounded-lg font-semibold border-2 "
+                          onClick={handleCancel}
+                          disabled={isUploading}
+                        >
+                          <RxCross2 />
                         </button>
-
                       </div>
                     )}
-                  </>
+                </>
 
                 <div className="relative flex justify-center items-center border-2  rounded-lg">
                   <input
@@ -586,7 +655,7 @@ const uploadExcelData = async () => {
                 ) : (
                   <button
                     onClick={() => setIsEditMode(true)}
-                    className="flex items-center gap-2 bg-[#fff] px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300"
+                    className="flex items-center gap-2 px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300"
                   >
                     Edit <MdModeEditOutline />
                   </button>
@@ -626,7 +695,17 @@ const uploadExcelData = async () => {
             <table className="rounded-t-xl font-semibold text-[#000] w-full border-collapse border border-gray-300">
               <thead>
                 <tr className="bg-gray-100">
-                  {isDeleteMode && <th className="p-2">Select</th>}
+                  {isDeleteMode && (
+                    <th className="p-2">
+                      <input
+                        type="checkbox"
+                        checked={selectAll}
+                        onChange={handleSelectAll}
+                        className="w-4 h-4"
+                      />
+                    </th>
+                  )}
+                  {isDeleteMode}
                   <th className="p-2">No</th>
                   <th className="p-2">Name</th>
                   <th className="p-2">Native Name</th>
@@ -634,33 +713,37 @@ const uploadExcelData = async () => {
                   <th className="p-2">Image</th>
                   <th className="p-2">Status</th>
                   <th className="p-2">
-          Item List
-          <input
-            type="checkbox"
-            checked={selectAllItemList}
-            onChange={() => handleSelectAllDisplay('showInItemList')}
-            className="ml-2"
-          />
-        </th>
-        <th className="p-2">
-          List Scroll
-          <input
-            type="checkbox"
-            checked={selectAllListScroll}
-            onChange={() => handleSelectAllDisplay('showInListScroll')}
-            className="ml-2"
-          />
-        </th>
-        <th className="p-2">
-          Single Scroll
-          <input
-            type="checkbox"
-            checked={selectAllSingleScroll}
-            onChange={() => handleSelectAllDisplay('showInSingleScroll')}
-            className="ml-2"
-          />
-        </th>
-        {/* <th className="p-2">All Preferences</th> */}
+                    Item List
+                    <input
+                      type="checkbox"
+                      checked={selectAllItemList}
+                      onChange={() => handleSelectAllDisplay("showInItemList")}
+                      className="ml-2"
+                    />
+                  </th>
+                  <th className="p-2">
+                    List Scroll
+                    <input
+                      type="checkbox"
+                      checked={selectAllListScroll}
+                      onChange={() =>
+                        handleSelectAllDisplay("showInListScroll")
+                      }
+                      className="ml-2"
+                    />
+                  </th>
+                  <th className="p-2">
+                    Single Scroll
+                    <input
+                      type="checkbox"
+                      checked={selectAllSingleScroll}
+                      onChange={() =>
+                        handleSelectAllDisplay("showInSingleScroll")
+                      }
+                      className="ml-2"
+                    />
+                  </th>
+                  {/* <th className="p-2">All Preferences</th> */}
                 </tr>
               </thead>
               <tbody>
@@ -675,9 +758,12 @@ const uploadExcelData = async () => {
                             if (e.target.checked) {
                               setSelectedItems([...selectedItems, item.id]);
                             } else {
-                              setSelectedItems(selectedItems.filter(id => id !== item.id));
+                              setSelectedItems(
+                                selectedItems.filter((id) => id !== item.id)
+                              );
                             }
                           }}
+                          className="w-4 h-4"
                         />
                       </td>
                     )}
@@ -685,13 +771,17 @@ const uploadExcelData = async () => {
                     <td className="p-2 text-center">
                       {isEditMode ? (
                         <input
-                        type="text"
-                        value={editedItems[item.id]?.name ?? item.name}
-                        onChange={(e) => handleEdit(item.id, 'name', e.target.value.toUpperCase())}
-                        className="px-2 py-1 border rounded"
-                      />
-                      
-                   
+                          type="text"
+                          value={editedItems[item.id]?.name ?? item.name}
+                          onChange={(e) =>
+                            handleEdit(
+                              item.id,
+                              "name",
+                              e.target.value.toUpperCase()
+                            )
+                          }
+                          className="px-2 py-1 border rounded"
+                        />
                       ) : (
                         item.name
                       )}
@@ -700,8 +790,12 @@ const uploadExcelData = async () => {
                       {isEditMode ? (
                         <input
                           type="text"
-                          value={editedItems[item.id]?.nativeName ?? item.nativeName}
-                          onChange={(e) => handleEdit(item.id, 'nativeName', e.target.value)}
+                          value={
+                            editedItems[item.id]?.nativeName ?? item.nativeName
+                          }
+                          onChange={(e) =>
+                            handleEdit(item.id, "nativeName", e.target.value)
+                          }
                           className="px-2 py-1 border rounded"
                         />
                       ) : (
@@ -713,7 +807,9 @@ const uploadExcelData = async () => {
                         <input
                           type="number"
                           value={editedItems[item.id]?.price ?? item.price}
-                          onChange={(e) => handleEdit(item.id, 'price', Number(e.target.value))}
+                          onChange={(e) =>
+                            handleEdit(item.id, "price", Number(e.target.value))
+                          }
                           className="px-2 py-1 border rounded"
                         />
                       ) : (
@@ -722,42 +818,64 @@ const uploadExcelData = async () => {
                     </td>
                     <td className="p-2">
                       <div className="flex justify-center items-center">
-                        <div className="w-[50px] h-[50px] rounded-lg bg-[#fff] flex justify-center items-center bg-transparent">
-                        {item.image ? (
+                        {/* Add the input element here, outside of any conditions */}
+                        <input
+                          id={`img-input-${item.id}`}
+                          type="file"
+                          accept="image/*"
+                          style={{ display: "none" }}
+                          onChange={imageUpdate}
+                          disabled={isUploading2}
+                        />
+                        <div className="w-[50px] h-[50px] rounded-lg bg-[#fff] flex justify-center items-center bg-transparent relative group">
+                          {item.image ? (
+                            <>
                               <img
                                 src={item.image}
                                 alt="item"
                                 className="w-full h-full object-cover rounded-lg"
                               />
-                            ) : (
-                              <>
-                                <button onClick={() => handleImageButtonClick(item.id)}>
-                                  {isUploading2 ? "Uploading..." : <IoIosAdd />}
-                                </button>
-                                <input
-                                  id={`img-input-${item.id}`}
-                                  type="file"
-                                  style={{ display: "none" }}
-                                  onChange={imageUpdate}
-                                  disabled={isUploading2}
-                                />
-                                {base64Image && currentItemId === item.id && (
-                                  <div className="bg-white" >
-                                    <img 
-                                      src={base64Image} 
-                                      alt="Preview" 
-                                      className="w-30 h-5 object-cover rounded-lg mx-auto mb-3"
-                                    />
-                                    <button 
-                                      onClick={handleAddImageToItem}
-                                      className="text-xs bg-green-500 text-white px-5 py-1 rounded inline-block w-50"
-                                    >
-                                      Upload
-                                    </button>
-                                  </div>
-                                )}
-                              </>
-                            )}
+                              {isEditMode && (
+                                <div className="absolute inset-0 bg-black bg-opacity-50 rounded-lg opacity-0 group-hover:opacity-100 flex justify-center items-center space-x-2">
+                                  <button
+                                    onClick={() => handleImageEdit(item.id)}
+                                    className="text-white bg-blue-500 p-1 rounded-full"
+                                  >
+                                    <MdModeEditOutline />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteImage(item.id)}
+                                    className="text-white bg-red-500 p-1 rounded-full"
+                                  >
+                                    <MdDelete />
+                                  </button>
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => handleImageButtonClick(item.id)}
+                              >
+                                {isUploading2 ? "Uploading..." : <IoIosAdd />}
+                              </button>
+                              {base64Image && currentItemId === item.id && (
+                                <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-2 bg-white p-2 rounded shadow-lg z-10">
+                                  <img
+                                    src={base64Image}
+                                    alt="Preview"
+                                    className="w-20 h-20 object-cover rounded-lg mx-auto mb-2"
+                                  />
+                                  <button
+                                    onClick={handleAddImageToItem}
+                                    className="bg-green-500 text-white px-3 py-1 rounded text-sm w-full"
+                                  >
+                                    Upload
+                                  </button>
+                                </div>
+                              )}
+                            </>
+                          )}
                         </div>
                       </div>
                     </td>
@@ -765,46 +883,74 @@ const uploadExcelData = async () => {
                       <div className="flex justify-center items-center">
                         <div
                           className={`relative w-11 h-5 rounded-full cursor-pointer transition-colors ${
-                            item.status === 'active' ? "bg-green-500" : "bg-gray-300"
+                            item.status === "active"
+                              ? "bg-green-500"
+                              : "bg-gray-300"
                           }`}
                           onClick={() => handleToggleStatus(item.id)}
                         >
                           <div
                             className={`absolute w-5 h-5 bg-white rounded-full shadow-md transform transition-transform ${
-                              item.status === 'active' ? "translate-x-6" : "translate-x-0"
+                              item.status === "active"
+                                ? "translate-x-6"
+                                : "translate-x-0"
                             }`}
                           />
                         </div>
                       </div>
                     </td>
                     <td className="p-2 text-center">
-                    <input
-                      type="checkbox"
-                      checked={item.displayPreferences?.showInItemList || false}
-                      onChange={() => handleToggleDisplay(item.id, 'showInItemList')}
-                      disabled={item.status !== 'active'}
-                      className={item.status !== 'active' ? 'opacity-50 cursor-not-allowed' : ''}
-                    />
-                      </td>
-                      <td className="p-2 text-center">
                       <input
                         type="checkbox"
-                        checked={item.displayPreferences?.showInListScroll || false}
-                        onChange={() => handleToggleDisplay(item.id, 'showInListScroll')}
-                        disabled={item.status !== 'active'}
-                        className={item.status !== 'active' ? 'opacity-50 cursor-not-allowed' : ''}
+                        checked={
+                          item.displayPreferences?.showInItemList || false
+                        }
+                        onChange={() =>
+                          handleToggleDisplay(item.id, "showInItemList")
+                        }
+                        disabled={item.status !== "active"}
+                        className={
+                          item.status !== "active"
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }
                       />
-                      </td>
-                      <td className="p-2 text-center">
+                    </td>
+                    <td className="p-2 text-center">
                       <input
                         type="checkbox"
-                        checked={item.displayPreferences?.showInSingleScroll || false}
-                        onChange={() => handleToggleDisplay(item.id, 'showInSingleScroll')}
-                        disabled={item.status !== 'active'}
-                        className={item.status !== 'active' ? 'opacity-50 cursor-not-allowed' : ''}
+                        checked={
+                          item.displayPreferences?.showInListScroll || false
+                        }
+                        onChange={() =>
+                          handleToggleDisplay(item.id, "showInListScroll")
+                        }
+                        disabled={item.status !== "active"}
+                        className={
+                          item.status !== "active"
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }
                       />
-                      </td>
-                      {/* <td className="p-2 text-center">
+                    </td>
+                    <td className="p-2 text-center">
+                      <input
+                        type="checkbox"
+                        checked={
+                          item.displayPreferences?.showInSingleScroll || false
+                        }
+                        onChange={() =>
+                          handleToggleDisplay(item.id, "showInSingleScroll")
+                        }
+                        disabled={item.status !== "active"}
+                        className={
+                          item.status !== "active"
+                            ? "opacity-50 cursor-not-allowed"
+                            : ""
+                        }
+                      />
+                    </td>
+                    {/* <td className="p-2 text-center">
                     <input
                       type="checkbox"
                       checked={
@@ -823,7 +969,6 @@ const uploadExcelData = async () => {
             </table>
           </div>
         </div>
-        
       </section>
     </div>
   );
