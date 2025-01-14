@@ -523,14 +523,15 @@ const handleImageEdit = (id) => {
             setSelectedItems([]);
           }
         };
+        
   return (
-    <div className="  h-screen overflow-auto relative z-[999] bg-white">
+    <div className="  h-screen overflow-auto relative z-[999] bg-white ">
       <section>
         <div className="flex w-full justify-center items-center flex-col mb-10">
           {/* Navbar */}
           <section
             style={{ backgroundColor: headerColor }}
-            className="w-full py-1  top-0 left-0 z-[998]  "
+            className="w-full py-1  top-0 left-0 z-[998]  mb-5"
           >
             <nav className="px-4 flex justify-between items-center ">
               <div className="w-[100px] md:w-[100px] h-auto">
@@ -562,7 +563,7 @@ const handleImageEdit = (id) => {
             <div className="grid grid-cols-1 place-items-center lg:flex items-center justify-center md:justify-between w-full px-6">
               <div className=" flex justify-center items-center gap-3 mb-5 lg:mb-0">
                 <Link to="/addItem">
-                  <div className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300">
+                  <div className="flex justify-center items-center gap-2 text-[#000]  px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300">
                     Add Item{" "}
                     <span>
                       <BsFillPlusSquareFill />
@@ -570,7 +571,7 @@ const handleImageEdit = (id) => {
                   </div>
                 </Link>
                 <Link to="/BackgroundVideo">
-                  <div className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300">
+                  <div className="flex justify-center items-center gap-2 text-[#000] px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300">
                     Bg Video{" "}
                     <span>
                       <SiGoogledisplayandvideo360 />
@@ -578,7 +579,7 @@ const handleImageEdit = (id) => {
                   </div>
                 </Link>
                 <Link to="/Settings">
-                  <div className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-6 py-3 rounded-lg font-semibold border-2 bg-gray-300">
+                  <div className="flex justify-center items-center gap-2 text-[#000]px-6 py-3 rounded-lg font-semibold border-2 bg-gray-300">
                     <IoMdSettings />
                   </div>
                 </Link>
@@ -586,7 +587,7 @@ const handleImageEdit = (id) => {
               <div className="grid grid-cols-1 place-content-center md:flex justify-center items-center gap-3">
                 <div>
                   <button
-                    className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300 "
+                    className="flex justify-center items-center gap-2 text-[#000]  px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300 "
                     onClick={handleFileUploadClick}
                   >
                     Import <PiMicrosoftExcelLogoBold />
@@ -638,7 +639,7 @@ const handleImageEdit = (id) => {
                   <>
                     <button
                       onClick={handleSaveEdits}
-                      className="flex items-center gap-2 bg-green-500 text-white px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300"
+                      className="flex items-center gap-2 bg-green-500 text-white px-8 py-2 rounded-lg font-semibold border-2"
                     >
                       Save <MdSave />
                     </button>
@@ -647,7 +648,7 @@ const handleImageEdit = (id) => {
                         setIsEditMode(false);
                         setEditedItems({});
                       }}
-                      className="flex items-center gap-2 bg-red-500 text-white px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300"
+                      className="flex items-center gap-2 bg-red-500 text-white px-8 py-2 rounded-lg font-semibold border-2 "
                     >
                       Cancel <MdCancel />
                     </button>
@@ -673,7 +674,7 @@ const handleImageEdit = (id) => {
                         setIsDeleteMode(false);
                         setSelectedItems([]);
                       }}
-                      className="flex items-center gap-2 bg-[#fff] px-8 py-2 rounded-lg font-semibold border-2 bg-green-500"
+                      className="flex items-center gap-2  px-8 py-2 rounded-lg font-semibold border-2 bg-green-500"
                     >
                       Cancel
                     </button>
@@ -681,7 +682,7 @@ const handleImageEdit = (id) => {
                 ) : (
                   <button
                     onClick={() => setIsDeleteMode(true)}
-                    className="flex items-center gap-2 bg-[#fff] px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300"
+                    className="flex items-center gap-2  px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300"
                   >
                     Delete <MdDelete />
                   </button>

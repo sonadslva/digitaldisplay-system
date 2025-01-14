@@ -51,7 +51,7 @@ const Superadmin = () => {
   
   }, []);
 
- 
+ //edit user
   const handleEditUser = async () => {
     try {
       const userRef = doc(db, 'AdminUser', editingUser.id);
@@ -74,7 +74,7 @@ const Superadmin = () => {
     }
   };
 
- 
+ //logout
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -84,7 +84,7 @@ const Superadmin = () => {
     }
   };
 
-
+//remaining days
   const incrementDaysForUsers = async () => {
     try {
         const updatedUsers = [...users];
@@ -146,6 +146,7 @@ const Superadmin = () => {
         console.error("Error in incrementDaysForUsers:", error);
     }
 };
+
   // Function to manually trigger the check
   const checkNow = () => {
     console.log('Manual check triggered');
@@ -162,58 +163,41 @@ const Superadmin = () => {
     return () => clearInterval(intervalId);
   }, [users]);
 
-
+//selection
   const toggleUserSelection = (userId) => {
     setSelectedUsers((prev) =>
       prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
     );
   };
   
-  
+  //delete
   const handleDeleteUsers = async () => {
     if (!isSelectionMode) {
-      setIsSelectionMode(true);
-      return;
+        setIsSelectionMode(true);
+        return;
     }
-  
-    const auth = getAuth();
-    
+
     try {
-      for (const userId of selectedUsers) {
-        try {
-          // 1. Get the user document from Firestore
-          const userDoc = await getDoc(doc(db, "AdminUser", userId));
-          const userData = userDoc.data();
-  
-          if (userData && userData.email) {
-            // 2. Delete from Authentication if user exists
+        for (const userId of selectedUsers) {
             try {
-              await deleteUser(auth, userId);
-            } catch (authError) {
-              console.error(`Auth deletion error for ${userId}:`, authError);
-              // Continue with Firestore deletion even if auth deletion fails
+                
+                await deleteDoc(doc(db, "AdminUser", userId));
+            } catch (error) {
+                console.error(`Error deleting user ${userId} from Firestore:`, error);
+               
             }
-          }
-  
-          // 3. Delete from Firestore
-          await deleteDoc(doc(db, "AdminUser", userId));
-  
-        } catch (error) {
-          console.error(`Error deleting user ${userId}:`, error);
-          // Continue with other deletions even if one fails
         }
-      }
-  
-      // 4. Update local state
-      setUsers(users.filter((user) => !selectedUsers.includes(user.id)));
-      setSelectedUsers([]); // Clear selected users
-      setIsSelectionMode(false); // Exit selection mode
-      
+
+     
+        setUsers(users.filter((user) => !selectedUsers.includes(user.id)));
+        setSelectedUsers([]);
+        setIsSelectionMode(false); 
     } catch (error) {
-      console.error("Error in delete operation:", error);
-      // Handle error appropriately (e.g., show error message to user)
-    }
-  };
+        console.error("Error in Firestore delete operation:", error);
+        
+    }
+};
+
   
   return (
     <div className=" h-screen overflow-auto relative z-[999] bg-[#dddada]">
