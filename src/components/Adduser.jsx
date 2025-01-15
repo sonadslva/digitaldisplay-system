@@ -28,35 +28,44 @@ const Adduser = () => {
                 return;
             }
     
-           
+            // Attempt to create the user in Firebase Authentication
             const userCredential = await createUserWithEmailAndPassword(auth, newUser.email, newUser.password);
             const user = userCredential.user;
     
-           
+            // Generate unique admin ID
             const adminId = `ADMIN-${uuidv4()}`;
-          
-          
+            
+            // Calculate validity and remaining days
             const currentDate = new Date();
             const validityDate = new Date(currentDate);
-            validityDate.setFullYear(currentDate.getFullYear() + 1) 
+            validityDate.setFullYear(currentDate.getFullYear() + 1);
             const timeDiff = validityDate.getTime() - currentDate.getTime();
-            const remainingDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 
+            const remainingDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    
+            // Prepare user object
             const userToAdd = {
                 ...newUser,
                 adminId,
                 userId: user.uid,
-                remainingDays, 
+                remainingDays,
                 validity: validityDate,
-                createdAt: Timestamp.now(), 
+                createdAt: Timestamp.now(),
                 status: 'active',
             };
     
+            // Add user data to Firestore
             await setDoc(doc(db, 'AdminUser', user.uid), userToAdd);
     
+            // Navigate back to the Superadmin panel
             navigate('/Superadmin');
         } catch (error) {
-            console.error("Error adding user:", error);
-            alert('Error adding user. Please try again.');
+            // Check if the error is due to an existing email
+            if (error.code === 'auth/email-already-in-use') {
+                alert('The email address is already in use by another account.');
+            } else {
+                console.error("Error adding user:", error);
+                alert('Error adding user. Please try again.');
+            }
         }
     };
     

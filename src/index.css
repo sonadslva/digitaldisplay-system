@@ -180,8 +180,8 @@ table{
   }
   .product-image img {
     height: 150px;
-    width: auto;
-    object-fit: contain;
+    width: 150px;
+    object-fit: cover;
   }
   .product-name {
     font-size: 35px;
