@@ -71,7 +71,7 @@ const UploadBackgroundVideo = () => {
       <button
         onClick={handleVideoUpload}
         disabled={isUploading}
-        className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300"
+        className="flex justify-center items-center gap-2 text-[#000]  px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300"
       >
         {isUploading ? 'Uploading...' : 'Upload Video'} <span><BsFillPlusSquareFill /></span>
       </button>

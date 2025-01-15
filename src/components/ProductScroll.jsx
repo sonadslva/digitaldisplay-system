@@ -72,6 +72,27 @@ const ProductScroll = () => {
 
   return (
     <div  className="product-scroller overflow-hidden relative">
+      <style>
+  {`
+    @keyframes scrollText {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+    .marquee-container {
+      position: relative;
+      overflow: hidden;
+      width: 100%;
+      min-height: 3rem;
+    }
+    .scrolling-text {
+      position: absolute;
+      white-space: nowrap;
+      will-change: transform;
+      animation: scrollText 18s linear infinite;
+      width: max-content;
+    }
+  `}
+</style>
       <div
         className="product-slider flex transition-transform duration-[15s] ease-linear"
         ref={sliderRef}
@@ -89,8 +110,12 @@ const ProductScroll = () => {
                 alt={product.name}
               />
             </div>
-            <div className=" absolute bottom-20 left-1/2 transform -translate-x-1/2 text-center font-bold text-lg text-black">
-              {product.name}
+            <div className="marquee-container   h-auto ">
+              {product.name.length > 22 ? (
+                <div className="absolute   left-1/2 scrolling-text font-bold text-lg text-black">{product.name} </div>
+              ) : (
+                <div className="absolute  transform -translate-x-1/2  left-1/2 text-center font-bold text-lg text-black ">{product.name} </div>
+              )}
             </div>
             <div style={{ backgroundColor: priceBgColor,color:fontColor }} className=" flex w-full justify-center items-center bg-[#1d485f] absolute bottom-0 gap-1 text-xl lg:text-[45px] py-3 font-semibold text-[#fff]">
               <HiCurrencyRupee />

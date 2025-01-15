@@ -108,7 +108,7 @@ const SingleProductSlider = () => {
       
                     {/* Name Section */}
                     <div className="w-full mt-4 lg:mt-6 text-center">
-                      <span className="block font-extrabold text-2xl lg:text-3xl 2xl:text-4xl text-[#201e1e]">
+                      <span className="block font-extrabold text-3xl lg:text-4xl 2xl:text-5xl text-[#201e1e]">
                         {product.name}
                       </span>
                       <span className="block font-bold text-lg lg:text-2xl 2xl:text-3xl text-gray-600 mt-1">

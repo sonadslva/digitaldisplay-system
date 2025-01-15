@@ -71,7 +71,7 @@ const ProfileVideo = () => {
       <div>
         <div className="flex flex-wrap justify-between px-4 mb-10">
           <Link to="/admin">
-            <button className="flex justify-center items-center gap-2 text-[#000] bg-[#ffffff] px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300">
+            <button className="flex justify-center items-center gap-2 text-[#000] px-8 py-2 rounded-lg font-semibold border-2 bg-gray-300">
               Back
             </button>
           </Link>
